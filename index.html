@@ -1970,13 +1970,9 @@ X-Throttling-Reason: high-system-load</pre>
 
   // Returns the right token for a given test panel (override > global)
   function getToken(prefix) {
-    // Find which panel prefix maps to
-    var panel = document.querySelector('[data-panel-id]');
-    // Walk all panels and match by contained element id
-    var token = getToken(prefix) || globalToken;
+    var token = globalToken;
     document.querySelectorAll('.test-panel').forEach(function(p) {
       var pid = p.getAttribute('data-panel-id');
-      // Check if this panel contains the run button for this prefix
       var spinner = p.querySelector('#' + prefix + '-spinner');
       if (spinner && panelTokens[pid]) token = panelTokens[pid];
     });
