@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adobe Sign REST API Reference</title>
+<style>
+  :root {
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;
+    --accent:#eb1000;--accent2:#ff6b35;--text:#e8eaf0;--text-dim:#8b90a8;
+    --text-muted:#555c7a;--get:#22c55e;--post:#3b82f6;--put:#f59e0b;
+    --delete:#ef4444;--code-bg:#0d1018;
+    --font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+    --font-sans:'Inter','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.6;display:flex;min-height:100vh;}
+  .sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);height:100vh;overflow-y:auto;position:sticky;top:0;padding-bottom:60px;display:flex;flex-direction:column;}
+  .sidebar-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:10;}
+  .sidebar-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;font-family:'Georgia',serif;flex-shrink:0;}
+  .sidebar-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.02em;}
+  .sidebar-subtitle{font-size:11px;color:var(--text-muted);margin-left:38px;}
+  .sidebar-section{padding:14px 20px 4px;}
+  .sidebar-section-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .sidebar-link{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--text-dim);font-size:12.5px;text-decoration:none;transition:background .15s,color .15s;margin-bottom:2px;}
+  .sidebar-link:hover,.sidebar-link.active{background:var(--surface2);color:var(--text);}
+  .method-tag{font-size:9.5px;font-weight:700;font-family:var(--font-mono);padding:2px 5px;border-radius:3px;min-width:36px;text-align:center;letter-spacing:.03em;}
+  .tag-GET{background:rgba(34,197,94,.15);color:var(--get);}
+  .tag-POST{background:rgba(59,130,246,.15);color:var(--post);}
+  .tag-PUT{background:rgba(245,158,11,.15);color:var(--put);}
+  .tag-DELETE{background:rgba(239,68,68,.15);color:var(--delete);}
+  .sidebar-footer{padding:10px 20px 12px;background:var(--surface);border-top:1px solid var(--border);font-size:10.5px;color:var(--text-muted);margin-top:auto;}
+  /* AUTH */
+  .auth-panel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin:10px 14px;padding:10px 12px;}
+  .auth-panel-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .auth-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;}
+  .auth-dot.active{background:#22c55e;}
+  .auth-input-wrap{position:relative;margin-bottom:6px;}
+  .auth-input{width:100%;background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:6px 30px 6px 8px;color:var(--text);font-size:11px;font-family:var(--font-mono);outline:none;transition:border-color .15s;}
+  .auth-input:focus{border-color:var(--accent);}
+  .auth-input::placeholder{color:var(--text-muted);}
+  .auth-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px;background:none;border:none;padding:0;}
+  .auth-eye:hover{color:var(--text);}
+  .auth-btn-row{display:flex;gap:5px;}
+  .auth-btn{flex:1;padding:5px 0;border-radius:5px;border:none;cursor:pointer;font-size:10.5px;font-weight:600;font-family:var(--font-sans);transition:opacity .15s;}
+  .auth-btn-save{background:var(--accent);color:#fff;}
+  .auth-btn-clear{background:var(--surface);color:var(--text-dim);border:1px solid var(--border);}
+  .auth-btn:hover{opacity:.85;}
+  .auth-region{width:100%;background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:11px;outline:none;margin-bottom:6px;appearance:none;cursor:pointer;}
+  .auth-region:focus{border-color:var(--accent);}
+  .auth-status{font-size:10px;color:var(--text-muted);text-align:center;margin-top:5px;}
+  /* SEARCH */
+  .search-bar{padding:10px 14px;border-bottom:1px solid var(--border);}
+  .search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px 7px 30px;color:var(--text);font-size:12px;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23555c7a' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.868-3.834zm-5.44 1.406a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:8px center;}
+  .search-input:focus{border-color:var(--accent);}
+  .search-input::placeholder{color:var(--text-muted);}
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;padding:0;}
+  .main-header{padding:28px 40px 20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface) 0%,var(--bg) 60%);}
+  .main-header h1{font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.02em;}
+  .main-header p{color:var(--text-dim);font-size:13px;max-width:600px;}
+  .header-badges{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
+  .badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;font-family:var(--font-mono);letter-spacing:.03em;}
+  .badge-version{background:rgba(235,16,0,.15);color:var(--accent2);border:1px solid rgba(235,16,0,.3);}
+  .badge-host{background:rgba(139,144,168,.1);color:var(--text-dim);border:1px solid var(--border);}
+  .badge-auth-ok{background:rgba(34,197,94,.12);color:var(--get);border:1px solid rgba(34,197,94,.25);display:none;}
+  /* SECTIONS */
+  .section{padding:28px 40px;border-bottom:1px solid var(--border);display:none;}
+  .section.active{display:block;}
+  .section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.01em;}
+  .section-desc{color:var(--text-dim);font-size:13px;margin-bottom:20px;max-width:680px;}
+  /* CARDS */
+  .endpoint-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;transition:border-color .15s;}
+  .endpoint-card:hover{border-color:rgba(235,16,0,.35);}
+  .endpoint-header{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none;}
+  .endpoint-method{font-size:11px;font-weight:700;font-family:var(--font-mono);padding:4px 10px;border-radius:5px;min-width:52px;text-align:center;letter-spacing:.05em;flex-shrink:0;}
+  .method-GET{background:rgba(34,197,94,.12);color:var(--get);border:1px solid rgba(34,197,94,.25);}
+  .method-POST{background:rgba(59,130,246,.12);color:var(--post);border:1px solid rgba(59,130,246,.25);}
+  .method-PUT{background:rgba(245,158,11,.12);color:var(--put);border:1px solid rgba(245,158,11,.25);}
+  .method-DELETE{background:rgba(239,68,68,.12);color:var(--delete);border:1px solid rgba(239,68,68,.25);}
+  .endpoint-path{font-family:var(--font-mono);font-size:13px;color:var(--text);flex:1;user-select:text;cursor:text;}
+  .endpoint-desc{font-size:12px;color:var(--text-muted);max-width:200px;text-align:right;flex-shrink:0;}
+  .endpoint-copy-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);font-size:10px;padding:3px 7px;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--font-sans);flex-shrink:0;}
+  .endpoint-copy-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  .endpoint-copy-btn.copied{border-color:var(--get);color:var(--get);}
+  .endpoint-chevron{color:var(--text-muted);font-size:11px;transition:transform .2s;flex-shrink:0;}
+  .endpoint-body{display:none;border-top:1px solid var(--border);}
+  .endpoint-body.open{display:block;}
+  .endpoint-chevron.open{transform:rotate(180deg);}
+  /* TABS */
+  .tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);padding:0 16px;overflow-x:auto;}
+  .tab{padding:9px 13px;font-size:11.5px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;margin-bottom:-1px;white-space:nowrap;}
+  .tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+  .tab:hover:not(.active){color:var(--text-dim);}
+  .tab-panel{display:none;padding:16px;}
+  .tab-panel.active{display:block;}
+  /* CODE */
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;line-height:1.7;color:#c9d1d9;position:relative;user-select:text;}
+  .pre-copy-btn{position:absolute;top:8px;right:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);font-size:10px;padding:3px 8px;cursor:pointer;font-family:var(--font-sans);transition:all .15s;opacity:0;}
+  pre:hover .pre-copy-btn{opacity:1;}
+  .pre-copy-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  .pre-copy-btn.copied{border-color:var(--get);color:var(--get);}
+  .code-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-family:var(--font-sans);}
+  .json-key{color:#79c0ff;}.json-string{color:#a5d6ff;}.json-number{color:#f0883e;}
+  .json-bool{color:#ff7b72;}.json-null{color:#8b949e;}.json-comment{color:#8b949e;font-style:italic;}
+  .json-req{color:#ff7b72;}.json-opt{color:#8b949e;}.json-type{color:#d2a8ff;}
+  .note{background:rgba(59,130,246,.08);border-left:3px solid var(--post);border-radius:0 6px 6px 0;padding:10px 14px;font-size:12.5px;color:var(--text-dim);margin-top:12px;}
+  .warn{background:rgba(245,158,11,.08);border-left:3px solid var(--put);border-radius:0 6px 6px 0;padding:10px 14px;font-size:12.5px;color:var(--text-dim);margin-top:12px;}
+  /* TEST */
+  .test-panel{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .test-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
+  .test-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;width:90px;flex-shrink:0;}
+  .test-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono);outline:none;transition:border-color .15s;}
+  .test-input:focus{border-color:var(--accent2);}
+  .test-input::placeholder{color:var(--text-muted);}
+  .test-body{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono);outline:none;resize:vertical;min-height:90px;transition:border-color .15s;}
+  .test-body:focus{border-color:var(--accent2);}
+  .test-run-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--font-sans);display:flex;align-items:center;gap:6px;margin-top:10px;}
+  .test-run-btn:hover{opacity:.85;}
+  .test-run-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .test-spinner{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  /* LOG */
+  .log-panel{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;margin-top:12px;overflow:hidden;}
+  .log-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface2);}
+  .log-title{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:8px;}
+  .log-status-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:var(--font-mono);}
+  .log-status-2xx{background:rgba(34,197,94,.15);color:var(--get);}
+  .log-status-4xx{background:rgba(239,68,68,.15);color:var(--delete);}
+  .log-status-5xx{background:rgba(245,158,11,.15);color:var(--put);}
+  .log-status-0{background:rgba(139,144,168,.15);color:var(--text-muted);}
+  .log-clear-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:3px;transition:color .15s;font-family:var(--font-sans);}
+  .log-clear-btn:hover{color:var(--delete);}
+  .log-body{padding:12px 14px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:#c9d1d9;max-height:320px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;}
+  .log-empty{color:var(--text-muted);font-style:italic;padding:20px 14px;font-size:12px;text-align:center;}
+  .log-meta{padding:6px 14px 10px;font-size:10.5px;color:var(--text-muted);border-top:1px solid var(--border);display:flex;gap:16px;}
+  /* TOKEN GEN */
+  .token-gen{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;}
+  .token-gen-title{font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:12px;}
+  .token-field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .token-field{display:flex;flex-direction:column;gap:4px;margin-bottom:6px;}
+  .token-field label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;}
+  .token-input{background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono);outline:none;transition:border-color .15s;width:100%;}
+  .token-input:focus{border-color:var(--accent2);}
+  .token-input::placeholder{color:var(--text-muted);}
+  .token-gen-btn{background:var(--post);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--font-sans);margin-top:6px;}
+  .token-gen-btn:hover{opacity:.85;}
+  .token-result{margin-top:10px;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px 40px 10px 12px;font-family:var(--font-mono);font-size:11px;color:var(--get);word-break:break-all;display:none;position:relative;}
+  .token-result-copy{position:absolute;top:6px;right:8px;background:none;border:1px solid var(--border);border-radius:3px;color:var(--text-muted);font-size:10px;padding:2px 7px;cursor:pointer;font-family:var(--font-sans);}
+  .token-result-copy:hover{border-color:var(--get);color:var(--get);}
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--get);color:var(--get);padding:10px 16px;border-radius:8px;font-size:12.5px;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  /* SCOPE PICKER */
+  .scope-picker{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-top:2px;}
+  .scope-picker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .scope-output{font-family:var(--font-mono);font-size:10.5px;color:var(--get);word-break:break-all;margin-top:6px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;min-height:28px;cursor:text;user-select:text;}
+  .scope-output-label{font-size:9.5px;color:var(--text-muted);margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+  .scope-group{margin-bottom:8px;}
+  .scope-group-label{font-size:9.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+  .scope-chips{display:flex;flex-wrap:wrap;gap:4px;}
+  .scope-chip{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 7px;cursor:pointer;transition:all .12s;user-select:none;}
+  .scope-chip:hover{border-color:var(--accent2);}
+  .scope-chip.selected{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.45);color:var(--post);}
+  .scope-chip input[type=checkbox]{display:none;}
+  .scope-chip-text{font-size:10.5px;font-family:var(--font-mono);color:inherit;}
+  .scope-chip-level{font-size:9px;color:var(--text-muted);margin-left:2px;}
+  .scope-chip.selected .scope-chip-level{color:rgba(59,130,246,.7);}
+  .scope-level-toggle{display:flex;gap:3px;margin-left:6px;}
+  .scope-level-btn{font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;font-family:var(--font-mono);transition:all .12s;}
+  .scope-level-btn:hover,.scope-level-btn.active{background:var(--surface2);border-color:var(--accent2);color:var(--accent2);}
+  .scope-actions{display:flex;gap:6px;margin-top:6px;}
+  .scope-action-btn{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;font-family:var(--font-sans);transition:all .12s;}
+  .scope-action-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  /* TOKEN BANNER inside test panels */
+  .test-token-banner{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:12px;}
+  .test-token-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0;}
+  .test-token-dot.ok{background:#22c55e;}
+  .test-token-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;}
+  .test-token-value{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .test-token-override{font-size:10px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:var(--font-sans);white-space:nowrap;padding:0;text-decoration:underline;flex-shrink:0;}
+  .test-token-override:hover{color:var(--text);}
+  .test-token-input-row{display:none;margin-bottom:10px;gap:6px;align-items:center;}
+  .test-token-input-row.visible{display:flex;}
+  .test-token-input{flex:1;background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:6px 10px;color:var(--text);font-size:11px;font-family:var(--font-mono);outline:none;transition:border-color .15s;}
+  .test-token-input:focus{border-color:var(--accent2);}
+  .test-token-input::placeholder{color:var(--text-muted);}
+  .test-token-use-btn{background:var(--post);color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-sans);white-space:nowrap;}
+  .test-token-use-btn:hover{opacity:.85;}
+  .test-token-clear-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:var(--font-sans);}
+  .test-token-clear-btn:hover{border-color:var(--delete);color:var(--delete);}
+  .shard-picker{margin-bottom:8px;}
+  .shard-picker-label{font-size:9.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+  .shard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+  .shard-btn{background:var(--code-bg);border:1px solid var(--border);border-radius:5px;padding:6px 4px;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .shard-btn:hover{border-color:var(--accent2);}
+  .shard-btn.active{background:rgba(235,16,0,.12);border-color:var(--accent);box-shadow:0 0 0 1px rgba(235,16,0,.3);}
+  .shard-btn-id{font-size:11px;font-weight:800;font-family:var(--font-mono);color:var(--text);letter-spacing:.04em;}
+  .shard-btn.active .shard-btn-id{color:var(--accent2);}
+  .shard-btn-region{font-size:8.5px;color:var(--text-muted);letter-spacing:.03em;}
+  .shard-btn.active .shard-btn-region{color:rgba(235,16,0,.7);}
+  .shard-host-display{font-size:10px;font-family:var(--font-mono);color:var(--text-dim);background:var(--code-bg);border:1px solid var(--border);border-radius:4px;padding:4px 8px;margin-top:4px;text-align:center;}
+  .shard-beta{border-style:dashed;border-color:rgba(245,158,11,.4);}
+  .shard-beta:hover{border-color:var(--put);}
+  .shard-beta.active{background:rgba(245,158,11,.1);border-color:var(--put);border-style:dashed;box-shadow:0 0 0 1px rgba(245,158,11,.3);}
+  .shard-beta.active .shard-btn-id{color:var(--put);}
+  .shard-beta.active .shard-btn-region{color:rgba(245,158,11,.7);}
+  .shard-beta-badge{position:absolute;top:3px;right:5px;font-size:7.5px;font-weight:800;letter-spacing:.08em;background:rgba(245,158,11,.18);color:var(--put);border:1px solid rgba(245,158,11,.35);border-radius:3px;padding:1px 4px;font-family:var(--font-sans);}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text-muted);}
+  @media(max-width:768px){.sidebar{display:none;}.main-header,.section{padding:20px;}.endpoint-desc{display:none;}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">A</div>
+      <span class="sidebar-title">Adobe Sign API</span>
+    </div>
+    <div class="sidebar-subtitle">REST v6 Reference</div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-panel-title"><span class="auth-dot" id="authDot"></span>Bearer Token</div>
+    <div class="shard-picker">
+      <div class="shard-picker-label">Shard / Region</div>
+      <div class="shard-grid">
+        <button class="shard-btn active" id="shard-na1" onclick="selectShard('na1','api.na1.echosign.com',this)">
+          <span class="shard-btn-id">NA1</span>
+          <span class="shard-btn-region">N. America</span>
+        </button>
+        <button class="shard-btn" id="shard-na2" onclick="selectShard('na2','api.na2.echosign.com',this)">
+          <span class="shard-btn-id">NA2</span>
+          <span class="shard-btn-region">N. America</span>
+        </button>
+        <button class="shard-btn" id="shard-na3" onclick="selectShard('na3','api.na3.echosign.com',this)">
+          <span class="shard-btn-id">NA3</span>
+          <span class="shard-btn-region">N. America</span>
+        </button>
+        <button class="shard-btn" id="shard-na4" onclick="selectShard('na4','api.na4.echosign.com',this)">
+          <span class="shard-btn-id">NA4</span>
+          <span class="shard-btn-region">N. America</span>
+        </button>
+        <button class="shard-btn" id="shard-eu1" onclick="selectShard('eu1','api.eu1.echosign.com',this)">
+          <span class="shard-btn-id">EU1</span>
+          <span class="shard-btn-region">Europe</span>
+        </button>
+        <button class="shard-btn" id="shard-eu2" onclick="selectShard('eu2','api.eu2.echosign.com',this)">
+          <span class="shard-btn-id">EU2</span>
+          <span class="shard-btn-region">Europe</span>
+        </button>
+        <button class="shard-btn" id="shard-ap1" onclick="selectShard('ap1','api.ap1.echosign.com',this)">
+          <span class="shard-btn-id">AP1</span>
+          <span class="shard-btn-region">Asia Pacific</span>
+        </button>
+        <button class="shard-btn" id="shard-jp1" onclick="selectShard('jp1','api.jp1.echosign.com',this)">
+          <span class="shard-btn-id">JP1</span>
+          <span class="shard-btn-region">Japan</span>
+        </button>
+        <button class="shard-btn" id="shard-in1" onclick="selectShard('in1','api.in1.echosign.com',this)">
+          <span class="shard-btn-id">IN1</span>
+          <span class="shard-btn-region">India</span>
+        </button>
+        <button class="shard-btn shard-beta" id="shard-na5" onclick="selectShard('na5','api.na5.echosign.com',this)" style="position:relative;grid-column:span 3;">
+          <span class="shard-btn-id">NA5</span>
+          <span class="shard-btn-region">N. America</span>
+          <span class="shard-beta-badge">BETA</span>
+        </button>
+      </div>
+      <div class="shard-host-display" id="shardHostDisplay">api.na1.echosign.com</div>
+    </div>
+    <div class="auth-input-wrap">
+      <input type="password" class="auth-input" id="bearerToken" placeholder="Paste access token..." oninput="onTokenInput()">
+      <button class="auth-eye" onclick="toggleTokenVis()">&#128065;</button>
+    </div>
+    <div class="auth-btn-row">
+      <button class="auth-btn auth-btn-save" onclick="saveToken()">Save</button>
+      <button class="auth-btn auth-btn-clear" onclick="clearToken()">Clear</button>
+    </div>
+    <div class="auth-status" id="authStatus">No token set</div>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" placeholder="Search endpoints..." id="sidebarSearch">
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <a class="sidebar-link active" onclick="showSection('overview',this)">&#127968; Getting Started</a>
+    <a class="sidebar-link" onclick="showSection('token-gen',this)">&#128273; Token Generator</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Documents</div>
+    <a class="sidebar-link" onclick="showSection('transient',this)"><span class="method-tag tag-POST">POST</span>/transientDocuments</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Agreements</div>
+    <a class="sidebar-link" onclick="showSection('agreements-post',this)"><span class="method-tag tag-POST">POST</span>/agreements</a>
+    <a class="sidebar-link" onclick="showSection('agreements-get',this)"><span class="method-tag tag-GET">GET</span>/agreements/{id}</a>
+    <a class="sidebar-link" onclick="showSection('agreements-state',this)"><span class="method-tag tag-PUT">PUT</span>/agreements/{id}/state</a>
+    <a class="sidebar-link" onclick="showSection('agreements-doc',this)"><span class="method-tag tag-GET">GET</span>/agreements/{id}/combinedDocument</a>
+    <a class="sidebar-link" onclick="showSection('agreements-formdata',this)"><span class="method-tag tag-GET">GET</span>/agreements/{id}/formData</a>
+    <a class="sidebar-link" onclick="showSection('agreements-signingurl',this)"><span class="method-tag tag-GET">GET</span>/agreements/{id}/signingUrls</a>
+    <a class="sidebar-link" onclick="showSection('agreements-reminders',this)"><span class="method-tag tag-POST">POST</span>/agreements/{id}/reminders</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Library Documents</div>
+    <a class="sidebar-link" onclick="showSection('library-get',this)"><span class="method-tag tag-GET">GET</span>/libraryDocuments</a>
+    <a class="sidebar-link" onclick="showSection('library-post',this)"><span class="method-tag tag-POST">POST</span>/libraryDocuments</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Widgets (Web Forms)</div>
+    <a class="sidebar-link" onclick="showSection('widgets-post',this)"><span class="method-tag tag-POST">POST</span>/widgets</a>
+    <a class="sidebar-link" onclick="showSection('widgets-get',this)"><span class="method-tag tag-GET">GET</span>/widgets/{id}</a>
+    <a class="sidebar-link" onclick="showSection('widgets-agreements',this)"><span class="method-tag tag-GET">GET</span>/widgets/{id}/agreements</a>
+    <a class="sidebar-link" onclick="showSection('widgets-formdata',this)"><span class="method-tag tag-GET">GET</span>/widgets/{id}/formData</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Webhooks</div>
+    <a class="sidebar-link" onclick="showSection('webhooks-post',this)"><span class="method-tag tag-POST">POST</span>/webhooks</a>
+    <a class="sidebar-link" onclick="showSection('webhooks-get',this)"><span class="method-tag tag-GET">GET</span>/webhooks</a>
+    <a class="sidebar-link" onclick="showSection('webhooks-getid',this)"><span class="method-tag tag-GET">GET</span>/webhooks/{id}</a>
+    <a class="sidebar-link" onclick="showSection('webhooks-put',this)"><span class="method-tag tag-PUT">PUT</span>/webhooks/{id}</a>
+    <a class="sidebar-link" onclick="showSection('webhooks-state',this)"><span class="method-tag tag-PUT">PUT</span>/webhooks/{id}/state</a>
+    <a class="sidebar-link" onclick="showSection('webhooks-delete',this)"><span class="method-tag tag-DELETE">DEL</span>/webhooks/{id}</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Throttling &amp; Errors</div>
+    <a class="sidebar-link" onclick="showSection('throttling',this)">&#9889; Rate Limits &amp; 429</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Logs</div>
+    <a class="sidebar-link" onclick="showSection('global-log',this)">&#128203; Response Log</a>
+  </div>
+
+  <div class="sidebar-footer">Designed by Dushyant Shukla</div>
+</nav>
+<main class="main">
+  <div class="main-header">
+    <h1>Adobe Sign REST API Reference</h1>
+    <p>Interactive endpoint reference for Acrobat Sign v6 — test live API calls, generate tokens, and review server responses in real time.</p>
+    <div class="header-badges">
+      <span class="badge badge-version">v6</span>
+      <span class="badge badge-host" id="headerRegionBadge">api.na1.echosign.com</span>
+      <span class="badge badge-host">Bearer Token Auth</span>
+      <span class="badge badge-auth-ok" id="authOkBadge">&#10003; Token Set</span>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overview" class="section active">
+    <div class="section-title">Getting Started</div>
+    <div class="section-desc">Base URL and authentication for all Acrobat Sign REST v6 API calls. Set your Bearer Token in the sidebar to enable live testing.</div>
+    <div class="code-label">Base URL</div>
+    <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>https://{baseUri}/api/rest/v6/</pre>
+    <div class="note">Always retrieve your base URI dynamically via <code>GET /baseUris</code>. It differs by region (na1, na2, eu1, ap1).</div>
+    <div class="code-label" style="margin-top:20px;">Authentication Header</div>
+    <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>Authorization: Bearer &lt;access_token&gt;</pre>
+    <div class="code-label" style="margin-top:20px;">Standard Request Headers</div>
+    <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>Content-Type: application/json
+Authorization: Bearer &lt;token&gt;
+x-api-user: email:user@example.com  <span class="json-comment">// optional: act on behalf of user</span></pre>
+    <div class="code-label" style="margin-top:20px;">Core Workflow</div>
+    <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button><span class="json-comment">// 4-step signing workflow</span>
+1. POST /transientDocuments       <span class="json-comment">// get transientDocumentId</span>
+2. POST /agreements               <span class="json-comment">// get agreementId</span>
+3. GET  /agreements/{id}          <span class="json-comment">// poll status or use webhook</span>
+4. GET  /agreements/{id}/combinedDocument  <span class="json-comment">// download signed PDF</span></pre>
+    <div class="note">&#128161; Set your Bearer Token in the sidebar, then visit any endpoint&#39;s <strong>Test</strong> tab to fire live requests. All responses also appear in the Response Log.</div>
+  </div>
+
+  <!-- TOKEN GENERATOR -->
+  <div id="token-gen" class="section">
+    <div class="section-title">Token Generator</div>
+    <div class="section-desc">Generate Bearer tokens, refresh tokens, or Authorization Code URLs using the Adobe Sign OAuth 2.0 flow.</div>
+
+    <!-- Auth Code URL builder -->
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleCard(this)">
+        <span class="endpoint-method method-GET" style="min-width:90px;font-size:10px;letter-spacing:.02em;">AUTH CODE</span>
+        <span class="endpoint-path">Build OAuth 2.0 Authorization URL</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'ac-build')">Build URL</div><div class="tab" onclick="switchTab(this,'ac-info')">How It Works</div></div>
+        <div id="ac-build" class="tab-panel active">
+          <div class="token-gen">
+            <div class="token-gen-title">&#128274; Build Authorization URL</div>
+            <div class="token-field-row">
+              <div class="token-field"><label>Client ID</label><input class="token-input" id="ac-client-id" placeholder="your_client_id"></div>
+              <div class="token-field"><label>Redirect URI</label><input class="token-input" id="ac-redirect" placeholder="https://yourapp.com/callback"></div>
+            </div>
+            <div class="token-field-row">
+              <div class="token-field" style="grid-column:1/-1;">
+                <label>Scope</label>
+                <div class="scope-picker" id="scopePicker">
+                  <div class="scope-group">
+                    <div class="scope-group-label">Agreements</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip selected" data-scope="agreement_read"><input type="checkbox" checked onchange="updateScopes()"><span class="scope-chip-text">agreement_read</span><span class="scope-chip-level" id="lv-agreement_read">:account</span></label>
+                      <label class="scope-chip selected" data-scope="agreement_write"><input type="checkbox" checked onchange="updateScopes()"><span class="scope-chip-text">agreement_write</span><span class="scope-chip-level" id="lv-agreement_write">:account</span></label>
+                      <label class="scope-chip selected" data-scope="agreement_send"><input type="checkbox" checked onchange="updateScopes()"><span class="scope-chip-text">agreement_send</span><span class="scope-chip-level" id="lv-agreement_send">:account</span></label>
+                      <label class="scope-chip" data-scope="agreement_retention"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">agreement_retention</span><span class="scope-chip-level" id="lv-agreement_retention">:account</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Library Documents</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="library_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">library_read</span><span class="scope-chip-level" id="lv-library_read">:account</span></label>
+                      <label class="scope-chip" data-scope="library_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">library_write</span><span class="scope-chip-level" id="lv-library_write">:account</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Widgets</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="widget_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">widget_read</span><span class="scope-chip-level" id="lv-widget_read">:account</span></label>
+                      <label class="scope-chip" data-scope="widget_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">widget_write</span><span class="scope-chip-level" id="lv-widget_write">:account</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Users</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="user_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">user_read</span><span class="scope-chip-level" id="lv-user_read">:account</span></label>
+                      <label class="scope-chip" data-scope="user_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">user_write</span><span class="scope-chip-level" id="lv-user_write">:account</span></label>
+                      <label class="scope-chip" data-scope="user_login"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">user_login</span><span class="scope-chip-level" id="lv-user_login">:self</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Workflows &amp; Mega Sign</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="workflow_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">workflow_read</span><span class="scope-chip-level" id="lv-workflow_read">:account</span></label>
+                      <label class="scope-chip" data-scope="workflow_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">workflow_write</span><span class="scope-chip-level" id="lv-workflow_write">:account</span></label>
+                      <label class="scope-chip" data-scope="mega_sign_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">mega_sign_read</span><span class="scope-chip-level" id="lv-mega_sign_read">:account</span></label>
+                      <label class="scope-chip" data-scope="mega_sign_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">mega_sign_write</span><span class="scope-chip-level" id="lv-mega_sign_write">:account</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Webhooks &amp; Reports</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="webhook_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">webhook_read</span><span class="scope-chip-level" id="lv-webhook_read">:account</span></label>
+                      <label class="scope-chip" data-scope="webhook_write"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">webhook_write</span><span class="scope-chip-level" id="lv-webhook_write">:account</span></label>
+                      <label class="scope-chip" data-scope="report_read"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">report_read</span><span class="scope-chip-level" id="lv-report_read">:account</span></label>
+                    </div>
+                  </div>
+                  <div class="scope-group">
+                    <div class="scope-group-label">Identity &amp; Application</div>
+                    <div class="scope-chips">
+                      <label class="scope-chip" data-scope="openid"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">openid</span></label>
+                      <label class="scope-chip" data-scope="agreement_forms"><input type="checkbox" onchange="updateScopes()"><span class="scope-chip-text">agreement_forms</span><span class="scope-chip-level" id="lv-agreement_forms">:account</span></label>
+                    </div>
+                  </div>
+                  <div style="border-top:1px solid var(--border);margin:8px 0 6px;padding-top:8px;">
+                    <div class="scope-output-label">Level modifier — applies to all :account scopes</div>
+                    <div style="display:flex;gap:6px;margin-bottom:8px;">
+                      <button class="scope-level-btn active" id="lvBtn-account" onclick="setAllLevel('account')">:account</button>
+                      <button class="scope-level-btn" id="lvBtn-group" onclick="setAllLevel('group')">:group</button>
+                      <button class="scope-level-btn" id="lvBtn-self" onclick="setAllLevel('self')">:self</button>
+                    </div>
+                    <div class="scope-output-label">Generated scope string</div>
+                    <div class="scope-output" id="scopeOutput">agreement_read:account agreement_write:account agreement_send:account</div>
+                    <div class="scope-actions">
+                      <button class="scope-action-btn" onclick="selectAllScopes()">Select All</button>
+                      <button class="scope-action-btn" onclick="clearAllScopes()">Clear All</button>
+                      <button class="scope-action-btn" onclick="copyScopeOutput()">Copy</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="token-field"><label>State (optional)</label><input class="token-input" id="ac-state" placeholder="random_state_string"></div>
+            </div>
+            <button class="token-gen-btn" onclick="buildAuthURL()">Build URL</button>
+            <div class="token-result" id="ac-result"><button class="token-result-copy" onclick="copyResult('ac-result')">Copy</button><span id="ac-result-text"></span></div>
+            <div class="note" style="margin-top:10px;">Open this URL in a browser. Adobe will redirect to your Redirect URI with <code>?code=...</code> appended.</div>
+          </div>
+        </div>
+        <div id="ac-info" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button><span class="json-comment">// Step 1: Redirect user to authorization URL</span>
+https://secure.na1.echosign.com/public/oauth/v2?
+  response_type=code
+  &amp;client_id=&lt;CLIENT_ID&gt;
+  &amp;redirect_uri=&lt;REDIRECT_URI&gt;
+  &amp;scope=agreement_read:account+agreement_send:account
+
+<span class="json-comment">// Step 2: Adobe redirects back with:</span>
+https://yourapp.com/callback?code=&lt;AUTH_CODE&gt;&amp;state=&lt;STATE&gt;
+
+<span class="json-comment">// Step 3: Exchange code for tokens using POST /oauth/v2/token below</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Access Token -->
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleCard(this)">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path">/oauth/v2/token &mdash; Exchange Code for Bearer Token</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'at-form')">Generate</div><div class="tab" onclick="switchTab(this,'at-raw')">Raw Request</div></div>
+        <div id="at-form" class="tab-panel active">
+          <div class="token-gen">
+            <div class="token-gen-title">&#9889; Exchange Authorization Code for Access Token</div>
+            <div class="token-field-row">
+              <div class="token-field"><label>Client ID</label><input class="token-input" id="at-client-id" placeholder="your_client_id"></div>
+              <div class="token-field"><label>Client Secret</label><input class="token-input" id="at-client-secret" placeholder="your_client_secret" type="password"></div>
+            </div>
+            <div class="token-field-row">
+              <div class="token-field"><label>Authorization Code</label><input class="token-input" id="at-code" placeholder="code from redirect"></div>
+              <div class="token-field"><label>Redirect URI</label><input class="token-input" id="at-redirect" placeholder="https://yourapp.com/callback"></div>
+            </div>
+            <button class="token-gen-btn" onclick="generateAccessToken()">Get Access Token</button>
+            <div class="token-result" id="at-result"><button class="token-result-copy" onclick="copyResult('at-result')">Copy</button><span id="at-result-text"></span></div>
+          </div>
+          <div id="at-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="at-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('at-log')">Clear</button></div>
+            <div class="log-body" id="at-log-body"></div>
+            <div class="log-meta" id="at-log-meta"></div>
+          </div>
+        </div>
+        <div id="at-raw" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>POST https://api.na1.echosign.com/oauth/v2/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=&lt;AUTHORIZATION_CODE&gt;
+&amp;client_id=&lt;CLIENT_ID&gt;
+&amp;client_secret=&lt;CLIENT_SECRET&gt;
+&amp;redirect_uri=&lt;REDIRECT_URI&gt;</pre>
+          <div class="code-label" style="margin-top:14px;">Response</div>
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"access_token"</span>: <span class="json-string">"3AAABLblqZhB..."</span>,
+  <span class="json-key">"refresh_token"</span>: <span class="json-string">"3AAABLblqZhB..."</span>,
+  <span class="json-key">"token_type"</span>: <span class="json-string">"Bearer"</span>,
+  <span class="json-key">"expires_in"</span>: <span class="json-number">3600</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Refresh Token -->
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleCard(this)">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path">/oauth/v2/refresh &mdash; Refresh Access Token</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'rt-form')">Generate</div><div class="tab" onclick="switchTab(this,'rt-raw')">Raw Request</div></div>
+        <div id="rt-form" class="tab-panel active">
+          <div class="token-gen">
+            <div class="token-gen-title">&#128260; Refresh Expired Access Token</div>
+            <div class="token-field-row">
+              <div class="token-field"><label>Client ID</label><input class="token-input" id="rt-client-id" placeholder="your_client_id"></div>
+              <div class="token-field"><label>Client Secret</label><input class="token-input" id="rt-client-secret" placeholder="your_client_secret" type="password"></div>
+            </div>
+            <div class="token-field"><label>Refresh Token</label><input class="token-input" id="rt-refresh-token" placeholder="your_refresh_token"></div>
+            <button class="token-gen-btn" onclick="doRefreshToken()">Refresh Token</button>
+            <div class="token-result" id="rt-result"><button class="token-result-copy" onclick="copyResult('rt-result')">Copy</button><span id="rt-result-text"></span></div>
+          </div>
+          <div id="rt-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="rt-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('rt-log')">Clear</button></div>
+            <div class="log-body" id="rt-log-body"></div>
+            <div class="log-meta" id="rt-log-meta"></div>
+          </div>
+        </div>
+        <div id="rt-raw" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>POST https://api.na1.echosign.com/oauth/v2/refresh HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token
+&amp;refresh_token=&lt;REFRESH_TOKEN&gt;
+&amp;client_id=&lt;CLIENT_ID&gt;
+&amp;client_secret=&lt;CLIENT_SECRET&gt;</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revoke -->
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleCard(this)">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path">/oauth/v2/revoke &mdash; Revoke Token</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'rv-raw')">Raw Request</div></div>
+        <div id="rv-raw" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>POST https://api.na1.echosign.com/oauth/v2/revoke HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+token=&lt;ACCESS_OR_REFRESH_TOKEN&gt;</pre>
+          <div class="note">Returns 200 OK on success. Revoking an access token does not revoke the refresh token and vice versa.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSIENT DOCUMENTS -->
+  <div id="transient" class="section">
+    <div class="section-title">POST /transientDocuments</div>
+    <div class="section-desc">Upload a document temporarily (7-day TTL). Returns a transientDocumentId for use in agreements and widgets.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/transientDocuments">/api/rest/v6/transientDocuments</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Upload document for temporary use</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'td-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'td-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'td-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'td-test')">Test</div>
+        </div>
+        <div id="td-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>POST /api/rest/v6/transientDocuments HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+Content-Type: multipart/form-data
+Content-Disposition: form-data; name="File"; filename="doc.pdf"
+
+&lt;PDF BINARY CONTENT&gt;</pre>
+        </div>
+        <div id="td-res" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"transientDocumentId"</span>: <span class="json-string">"3AAABLblqZhBVYbgJbl--example"</span>
+}</pre>
+          <div class="note">This ID is valid for 7 days only. One file per request.</div>
+        </div>
+        <div id="td-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"File"</span>: <span class="json-type">binary</span>        <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"File-Name"</span>: <span class="json-type">string</span>    <span class="json-opt">// optional</span>
+  <span class="json-key">"Mime-Type"</span>: <span class="json-type">string</span>    <span class="json-opt">// optional — e.g. "application/pdf"</span>
+}</pre>
+        </div>
+        <div id="td-test" class="tab-panel">
+          <div class="test-panel">
+            <div style="margin-bottom:10px;font-size:12px;color:var(--text-dim);">Select a file to upload as a transient document. Returns a <code>transientDocumentId</code> valid for 7 days.</div>
+            <div class="test-row"><span class="test-label">File</span><input type="file" id="td-test-file" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 10px;color:var(--text);font-size:12px;cursor:pointer;"></div>
+            <button class="test-run-btn" onclick="runTransientTest()"><span class="test-spinner" id="td-spinner"></span>&#9654; Upload &amp; Get ID</button>
+          </div>
+          <div id="td-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="td-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('td-log')">Clear</button></div>
+            <div class="log-body" id="td-log-body"></div>
+            <div class="log-meta" id="td-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGREEMENTS POST -->
+  <div id="agreements-post" class="section">
+    <div class="section-title">POST /agreements</div>
+    <div class="section-desc">Create and send an agreement for e-signature.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements">/api/rest/v6/agreements</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Create &amp; send agreement</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'ap-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'ap-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'ap-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'ap-test')">Test</div>
+        </div>
+        <div id="ap-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: [{ <span class="json-key">"transientDocumentId"</span>: <span class="json-string">"3AAABLblqZh..."</span> }],
+  <span class="json-key">"name"</span>: <span class="json-string">"My Agreement"</span>,
+  <span class="json-key">"participantSetsInfo"</span>: [{
+    <span class="json-key">"memberInfos"</span>: [{ <span class="json-key">"email"</span>: <span class="json-string">"signer@example.com"</span> }],
+    <span class="json-key">"order"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"role"</span>: <span class="json-string">"SIGNER"</span>
+  }],
+  <span class="json-key">"signatureType"</span>: <span class="json-string">"ESIGN"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"IN_PROCESS"</span>
+}</pre>
+        </div>
+        <div id="ap-res" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"id"</span>: <span class="json-string">"CBJCHBCAABAAKrGqq7u5C_example"</span> }</pre>
+        </div>
+        <div id="ap-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: <span class="json-type">array</span>                   <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"name"</span>: <span class="json-type">string</span>                      <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"participantSetsInfo"</span>: <span class="json-type">array</span>        <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"signatureType"</span>: <span class="json-type">enum(ESIGN|WRITTEN)</span>  <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"state"</span>: <span class="json-type">enum(DRAFT|AUTHORING|IN_PROCESS)</span>  <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"expirationTime"</span>: <span class="json-type">string(ISO8601)</span>  <span class="json-opt">// optional</span>
+  <span class="json-key">"locale"</span>: <span class="json-type">string</span>                   <span class="json-opt">// optional</span>
+  <span class="json-key">"message"</span>: <span class="json-type">string</span>                  <span class="json-opt">// optional — email note to signers</span>
+}</pre>
+        </div>
+        <div id="ap-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Endpoint</span><input class="test-input" id="ap-test-url" value="/api/rest/v6/agreements"></div>
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="ap-test-body">{
+  "fileInfos": [{ "transientDocumentId": "YOUR_TRANSIENT_ID" }],
+  "name": "Test Agreement",
+  "participantSetsInfo": [{
+    "memberInfos": [{ "email": "signer@example.com" }],
+    "order": 1,
+    "role": "SIGNER"
+  }],
+  "signatureType": "ESIGN",
+  "state": "IN_PROCESS"
+}</textarea></div>
+            <button class="test-run-btn" onclick="runTest('ap','POST',document.getElementById('ap-test-url').value,document.getElementById('ap-test-body').value)"><span class="test-spinner" id="ap-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="ap-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="ap-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('ap-log')">Clear</button></div>
+            <div class="log-body" id="ap-log-body"></div>
+            <div class="log-meta" id="ap-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGREEMENTS GET -->
+  <div id="agreements-get" class="section">
+    <div class="section-title">GET /agreements/{agreementId}</div>
+    <div class="section-desc">Retrieve current status and metadata of an agreement.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}">/api/rest/v6/agreements/{agreementId}</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Get agreement status</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'ag-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'ag-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'ag-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'ag-test')">Test</div>
+        </div>
+        <div id="ag-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/agreements/{agreementId} HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="ag-res" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"id"</span>: <span class="json-string">"CBJCHBCAABAAKrGqq7u5C_example"</span>,
+  <span class="json-key">"name"</span>: <span class="json-string">"My Agreement"</span>,
+  <span class="json-key">"status"</span>: <span class="json-string">"OUT_FOR_SIGNATURE"</span>,
+  <span class="json-key">"signatureType"</span>: <span class="json-string">"ESIGN"</span>,
+  <span class="json-key">"createdDate"</span>: <span class="json-string">"2024-01-15T10:30:00Z"</span>
+}</pre>
+        </div>
+        <div id="ag-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button><span class="json-comment">// Status enum values:</span>
+<span class="json-comment">// OUT_FOR_SIGNATURE | SIGNED | CANCELLED | EXPIRED | RECALLED</span>
+<span class="json-comment">// DRAFT | AUTHORING | IN_PROCESS | APPROVED | DELIVERED</span></pre>
+        </div>
+        <div id="ag-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="ag-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <button class="test-run-btn" onclick="runIdTest('ag','agreements')"><span class="test-spinner" id="ag-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="ag-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="ag-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('ag-log')">Clear</button></div>
+            <div class="log-body" id="ag-log-body"></div>
+            <div class="log-meta" id="ag-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUT STATE -->
+  <div id="agreements-state" class="section">
+    <div class="section-title">PUT /agreements/{agreementId}/state</div>
+    <div class="section-desc">Transition an agreement: DRAFT &rarr; AUTHORING &rarr; IN_PROCESS &rarr; CANCELLED.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-PUT">PUT</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}/state">/api/rest/v6/agreements/{agreementId}/state</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Transition agreement state</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'as-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'as-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'as-test')">Test</div>
+        </div>
+        <div id="as-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"state"</span>: <span class="json-string">"IN_PROCESS"</span>,
+  <span class="json-key">"agreementCancellationInfo"</span>: {
+    <span class="json-key">"comment"</span>: <span class="json-string">"Cancelling due to change in requirements"</span>,
+    <span class="json-key">"notifyOtherParticipants"</span>: <span class="json-bool">true</span>
+  }
+}</pre>
+        </div>
+        <div id="as-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"state"</span>: <span class="json-type">enum(AUTHORING|IN_PROCESS|CANCELLED)</span>  <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"agreementCancellationInfo"</span>: <span class="json-type">object</span>             <span class="json-opt">// optional (CANCELLED only)</span>
+    { <span class="json-key">"comment"</span>: <span class="json-type">string</span>, <span class="json-key">"notifyOtherParticipants"</span>: <span class="json-type">boolean</span> }
+}</pre>
+          <div class="note">Returns HTTP 200 with no body on success.</div>
+        </div>
+        <div id="as-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="as-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="as-test-body">{ "state": "CANCELLED", "agreementCancellationInfo": { "comment": "Cancelling via API", "notifyOtherParticipants": true } }</textarea></div>
+            <button class="test-run-btn" onclick="runPutIdTest('as','agreements','/state')"><span class="test-spinner" id="as-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="as-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="as-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('as-log')">Clear</button></div>
+            <div class="log-body" id="as-log-body"></div>
+            <div class="log-meta" id="as-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBINED DOC -->
+  <div id="agreements-doc" class="section">
+    <div class="section-title">GET /agreements/{agreementId}/combinedDocument</div>
+    <div class="section-desc">Download the combined signed PDF. Returns binary PDF stream.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}/combinedDocument">/api/rest/v6/agreements/{id}/combinedDocument</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Download signed PDF</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'cd-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'cd-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'cd-related')">Related</div>
+          <div class="tab" onclick="switchTab(this,'cd-test')">Test</div>
+        </div>
+        <div id="cd-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/agreements/{id}/combinedDocument HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+<span class="json-comment">// Optional: ?versionId=... &attachSupportingDocuments=true &attachAuditReport=true</span></pre>
+        </div>
+        <div id="cd-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"agreementId"</span>: <span class="json-type">string</span>                  <span class="json-req">// REQUIRED — path</span>
+  <span class="json-key">"versionId"</span>: <span class="json-type">string</span>                   <span class="json-opt">// optional</span>
+  <span class="json-key">"attachSupportingDocuments"</span>: <span class="json-type">boolean</span>  <span class="json-opt">// optional</span>
+  <span class="json-key">"attachAuditReport"</span>: <span class="json-type">boolean</span>         <span class="json-opt">// optional</span>
+}</pre>
+        </div>
+        <div id="cd-related" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/agreements/{id}/documents
+GET /api/rest/v6/agreements/{id}/documents/{documentId}
+GET /api/rest/v6/agreements/{id}/auditTrail</pre>
+        </div>
+        <div id="cd-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="cd-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <div class="test-row"><span class="test-label">Audit Report</span><select class="test-input" id="cd-test-audit" style="appearance:none;cursor:pointer;"><option value="false">No</option><option value="true">Yes</option></select></div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px;">&#9432; Returns binary PDF. Response will show file size — use browser DevTools Network tab to download.</div>
+            <button class="test-run-btn" onclick="runDocDownloadTest()"><span class="test-spinner" id="cd-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="cd-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="cd-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('cd-log')">Clear</button></div>
+            <div class="log-body" id="cd-log-body"></div>
+            <div class="log-meta" id="cd-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM DATA -->
+  <div id="agreements-formdata" class="section">
+    <div class="section-title">GET /agreements/{agreementId}/formData</div>
+    <div class="section-desc">Retrieve form field data entered by signers. Returns CSV.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}/formData">/api/rest/v6/agreements/{id}/formData</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Signer form data (CSV)</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'fd-req')">Request</div><div class="tab" onclick="switchTab(this,'fd-schema')">Schema</div><div class="tab" onclick="switchTab(this,'fd-test')">Test</div></div>
+        <div id="fd-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/agreements/{agreementId}/formData HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+<span class="json-comment">// Response: text/csv — Row 1: headers, Row 2+: signer data</span></pre>
+        </div>
+        <div id="fd-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button"><span class="json-key">"agreementId"</span>: <span class="json-type">string</span>  <span class="json-req">// REQUIRED — path</span></pre>
+        </div>
+        <div id="fd-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="fd-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <button class="test-run-btn" onclick="runIdTest('fd','agreements','/formData')"><span class="test-spinner" id="fd-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="fd-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="fd-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('fd-log')">Clear</button></div>
+            <div class="log-body" id="fd-log-body"></div>
+            <div class="log-meta" id="fd-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNING URLS -->
+  <div id="agreements-signingurl" class="section">
+    <div class="section-title">GET /agreements/{agreementId}/signingUrls</div>
+    <div class="section-desc">Retrieve per-participant signing URLs for embedded or in-person signing.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}/signingUrls">/api/rest/v6/agreements/{id}/signingUrls</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Get per-signer URLs</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'su-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'su-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'su-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'su-test')">Test</div>
+        </div>
+        <div id="su-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/agreements/{id}/signingUrls HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="su-res" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"signingUrlSetInfos"</span>: [{
+    <span class="json-key">"signingUrls"</span>: [{
+      <span class="json-key">"email"</span>: <span class="json-string">"signer@company.com"</span>,
+      <span class="json-key">"esignUrl"</span>: <span class="json-string">"https://secure.na1.echosign.com/public/apiesign?pid=CBF..."</span>
+    }]
+  }]
+}</pre>
+        </div>
+        <div id="su-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button><span class="json-key">"agreementId"</span>: <span class="json-type">string</span>  <span class="json-req">// REQUIRED — path</span></pre>
+        </div>
+        <div id="su-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="su-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <button class="test-run-btn" onclick="runIdTest('su','agreements','/signingUrls')"><span class="test-spinner" id="su-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="su-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="su-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('su-log')">Clear</button></div>
+            <div class="log-body" id="su-log-body"></div>
+            <div class="log-meta" id="su-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div id="agreements-reminders" class="section">
+    <div class="section-title">POST /agreements/{agreementId}/reminders</div>
+    <div class="section-desc">Send a signing reminder to participants who haven't signed yet.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/agreements/{agreementId}/reminders">/api/rest/v6/agreements/{id}/reminders</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Send reminder to signers</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'rm-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'rm-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'rm-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'rm-test')">Test</div>
+        </div>
+        <div id="rm-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"recipientParticipantIds"</span>: [<span class="json-string">"&lt;participantId&gt;"</span>],
+  <span class="json-key">"status"</span>: <span class="json-string">"ACTIVE"</span>,
+  <span class="json-key">"nextSentDate"</span>: <span class="json-string">"2024-12-01T10:00:00Z"</span>
+}</pre>
+        </div>
+        <div id="rm-res" class="tab-panel"><pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"id"</span>: <span class="json-string">"&lt;reminder-id&gt;"</span> }</pre></div>
+        <div id="rm-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"recipientParticipantIds"</span>: <span class="json-type">array[string]</span>  <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"status"</span>: <span class="json-type">enum(ACTIVE)</span>                 <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"nextSentDate"</span>: <span class="json-type">string(ISO8601)</span>        <span class="json-opt">// optional</span>
+  <span class="json-key">"note"</span>: <span class="json-type">string</span>                        <span class="json-opt">// optional</span>
+}</pre>
+        </div>
+        <div id="rm-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Agreement ID</span><input class="test-input" id="rm-test-id" placeholder="CBJCHBCAABAAKrGqq..."></div>
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="rm-test-body">{
+  "recipientParticipantIds": ["PARTICIPANT_ID"],
+  "status": "ACTIVE",
+  "note": "Please sign at your earliest convenience."
+}</textarea></div>
+            <button class="test-run-btn" onclick="runPostIdTest('rm','agreements','/reminders')"><span class="test-spinner" id="rm-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="rm-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="rm-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('rm-log')">Clear</button></div>
+            <div class="log-body" id="rm-log-body"></div>
+            <div class="log-meta" id="rm-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY GET -->
+  <div id="library-get" class="section">
+    <div class="section-title">GET /libraryDocuments</div>
+    <div class="section-desc">Retrieve library documents accessible to the user.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/libraryDocuments">/api/rest/v6/libraryDocuments</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">List library templates</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'lg-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'lg-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'lg-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'lg-test')">Test</div>
+        </div>
+        <div id="lg-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/libraryDocuments HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+<span class="json-comment">// ?groupId=... &showHiddenLibraryDocuments=false</span></pre>
+        </div>
+        <div id="lg-res" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"libraryDocumentList"</span>: [{
+    <span class="json-key">"id"</span>: <span class="json-string">"CBJCHBCAABAAncSuj..."</span>,
+    <span class="json-key">"name"</span>: <span class="json-string">"NDA Template"</span>,
+    <span class="json-key">"sharingMode"</span>: <span class="json-string">"ACCOUNT"</span>,
+    <span class="json-key">"status"</span>: <span class="json-string">"ACTIVE"</span>
+  }],
+  <span class="json-key">"page"</span>: { <span class="json-key">"nextCursor"</span>: <span class="json-string">"..."</span> }
+}</pre>
+        </div>
+        <div id="lg-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"groupId"</span>: <span class="json-type">string</span>                     <span class="json-opt">// optional</span>
+  <span class="json-key">"showHiddenLibraryDocuments"</span>: <span class="json-type">boolean</span>   <span class="json-opt">// optional</span>
+  <span class="json-key">"cursor"</span>: <span class="json-type">string</span>                     <span class="json-opt">// optional — pagination</span>
+  <span class="json-key">"pageSize"</span>: <span class="json-type">integer</span>                  <span class="json-opt">// optional</span>
+}</pre>
+        </div>
+        <div id="lg-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Group ID</span><input class="test-input" id="lg-test-gid" placeholder="optional — leave blank for all"></div>
+            <button class="test-run-btn" onclick="runLibraryTest()"><span class="test-spinner" id="lg-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="lg-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="lg-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('lg-log')">Clear</button></div>
+            <div class="log-body" id="lg-log-body"></div>
+            <div class="log-meta" id="lg-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY POST -->
+  <div id="library-post" class="section">
+    <div class="section-title">POST /libraryDocuments</div>
+    <div class="section-desc">Create a library template from a transient document or existing agreement.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/libraryDocuments">/api/rest/v6/libraryDocuments</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Create library template</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'lp-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'lp-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'lp-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'lp-test')">Test</div>
+        </div>
+        <div id="lp-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: [{ <span class="json-key">"transientDocumentId"</span>: <span class="json-string">"3AAABLblqZh..."</span> }],
+  <span class="json-key">"name"</span>: <span class="json-string">"My Library Template"</span>,
+  <span class="json-key">"sharingMode"</span>: <span class="json-string">"GROUP"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"ACTIVE"</span>,
+  <span class="json-key">"templateTypes"</span>: [<span class="json-string">"DOCUMENT"</span>]
+}</pre>
+        </div>
+        <div id="lp-res" class="tab-panel"><pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"id"</span>: <span class="json-string">"CBJCHBCAABAAncSuj1tFB..."</span> }</pre></div>
+        <div id="lp-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: <span class="json-type">array</span>                       <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"name"</span>: <span class="json-type">string</span>                         <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"sharingMode"</span>: <span class="json-type">enum(USER|GROUP|ACCOUNT)</span>   <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"state"</span>: <span class="json-type">enum(ACTIVE|INACTIVE)</span>          <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"templateTypes"</span>: <span class="json-type">array[enum]</span>            <span class="json-req">// REQUIRED — DOCUMENT | FORM_FIELD_LAYER</span>
+}</pre>
+        </div>
+        <div id="lp-test" class="tab-panel">
+          <div class="test-panel">
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="lp-test-body">{
+  "fileInfos": [{ "transientDocumentId": "YOUR_TRANSIENT_ID" }],
+  "name": "My Library Template",
+  "sharingMode": "GROUP",
+  "state": "ACTIVE",
+  "templateTypes": ["DOCUMENT"]
+}</textarea></div>
+            <button class="test-run-btn" onclick="runTest('lp','POST','/api/rest/v6/libraryDocuments',document.getElementById('lp-test-body').value)"><span class="test-spinner" id="lp-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="lp-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="lp-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('lp-log')">Clear</button></div>
+            <div class="log-body" id="lp-log-body"></div>
+            <div class="log-meta" id="lp-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIDGETS POST -->
+  <div id="widgets-post" class="section">
+    <div class="section-title">POST /widgets</div>
+    <div class="section-desc">Create a web form (widget). Each signing creates a new agreement instance.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/widgets">/api/rest/v6/widgets</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Create a web form</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'wp-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'wp-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'wp-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'wp-test')">Test</div>
+        </div>
+        <div id="wp-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: [{ <span class="json-key">"transientDocumentId"</span>: <span class="json-string">"3AAABLblqZh..."</span> }],
+  <span class="json-key">"name"</span>: <span class="json-string">"MyTestWidget"</span>,
+  <span class="json-key">"widgetParticipantSetInfo"</span>: {
+    <span class="json-key">"memberInfos"</span>: [{ <span class="json-key">"email"</span>: <span class="json-string">""</span> }],
+    <span class="json-key">"role"</span>: <span class="json-string">"SIGNER"</span>
+  },
+  <span class="json-key">"state"</span>: <span class="json-string">"ACTIVE"</span>
+}</pre>
+        </div>
+        <div id="wp-res" class="tab-panel"><pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"id"</span>: <span class="json-string">"&lt;widgetId&gt;"</span> }</pre></div>
+        <div id="wp-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"fileInfos"</span>: <span class="json-type">array</span>                           <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"name"</span>: <span class="json-type">string</span>                             <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"widgetParticipantSetInfo"</span>: <span class="json-type">object</span>         <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"state"</span>: <span class="json-type">enum(ACTIVE|AUTHORING|DRAFT)</span>       <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"additionalParticipantSetsInfo"</span>: <span class="json-type">array</span>     <span class="json-opt">// optional</span>
+  <span class="json-key">"message"</span>: <span class="json-type">string</span>                          <span class="json-opt">// optional</span>
+  <span class="json-key">"locale"</span>: <span class="json-type">string</span>                           <span class="json-opt">// optional</span>
+}</pre>
+        </div>
+        <div id="wp-test" class="tab-panel">
+          <div class="test-panel">
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="wp-test-body">{
+  "fileInfos": [{ "transientDocumentId": "YOUR_TRANSIENT_ID" }],
+  "name": "My Web Form",
+  "widgetParticipantSetInfo": {
+    "memberInfos": [{ "email": "" }],
+    "role": "SIGNER"
+  },
+  "state": "ACTIVE"
+}</textarea></div>
+            <button class="test-run-btn" onclick="runTest('wp','POST','/api/rest/v6/widgets',document.getElementById('wp-test-body').value)"><span class="test-spinner" id="wp-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="wp-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="wp-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('wp-log')">Clear</button></div>
+            <div class="log-body" id="wp-log-body"></div>
+            <div class="log-meta" id="wp-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIDGETS GET -->
+  <div id="widgets-get" class="section">
+    <div class="section-title">GET /widgets/{widgetId}</div>
+    <div class="section-desc">Retrieve details and status of a web form.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/widgets/{widgetId}">/api/rest/v6/widgets/{widgetId}</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Get widget details</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'wg-req')">Request</div><div class="tab" onclick="switchTab(this,'wg-schema')">Schema</div><div class="tab" onclick="switchTab(this,'wg-test')">Test</div></div>
+        <div id="wg-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/widgets/{widgetId} HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="wg-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"id"</span>: <span class="json-type">string</span>                         <span class="json-req">// widget ID</span>
+  <span class="json-key">"name"</span>: <span class="json-type">string</span>                       <span class="json-req"></span>
+  <span class="json-key">"status"</span>: <span class="json-type">enum(ACTIVE|INACTIVE|DRAFT)</span>   <span class="json-req"></span>
+  <span class="json-key">"url"</span>: <span class="json-type">string</span>                        <span class="json-opt">// optional — hosted URL</span>
+  <span class="json-key">"javascript"</span>: <span class="json-type">string</span>                <span class="json-opt">// optional — embed code</span>
+}</pre>
+        </div>
+        <div id="wg-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Widget ID</span><input class="test-input" id="wg-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <button class="test-run-btn" onclick="runIdTest('wg','widgets')"><span class="test-spinner" id="wg-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="wg-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="wg-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('wg-log')">Clear</button></div>
+            <div class="log-body" id="wg-log-body"></div>
+            <div class="log-meta" id="wg-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIDGETS AGREEMENTS -->
+  <div id="widgets-agreements" class="section">
+    <div class="section-title">GET /widgets/{widgetId}/agreements</div>
+    <div class="section-desc">Get all agreement instances created from this widget.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/widgets/{widgetId}/agreements">/api/rest/v6/widgets/{widgetId}/agreements</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">List agreements from widget</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'wa-req')">Request</div><div class="tab" onclick="switchTab(this,'wa-test')">Test</div></div>
+        <div id="wa-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/widgets/{widgetId}/agreements HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="wa-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Widget ID</span><input class="test-input" id="wa-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <button class="test-run-btn" onclick="runIdTest('wa','widgets','/agreements')"><span class="test-spinner" id="wa-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="wa-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="wa-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('wa-log')">Clear</button></div>
+            <div class="log-body" id="wa-log-body"></div>
+            <div class="log-meta" id="wa-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIDGETS FORMDATA -->
+  <div id="widgets-formdata" class="section">
+    <div class="section-title">GET /widgets/{widgetId}/formData</div>
+    <div class="section-desc">Retrieve all form data submitted across all signings of this widget. Returns CSV.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/widgets/{widgetId}/formData">/api/rest/v6/widgets/{widgetId}/formData</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">All form submissions (CSV)</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'wf-req')">Request</div><div class="tab" onclick="switchTab(this,'wf-test')">Test</div></div>
+        <div id="wf-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/widgets/{widgetId}/formData HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="wf-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Widget ID</span><input class="test-input" id="wf-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <button class="test-run-btn" onclick="runIdTest('wf','widgets','/formData')"><span class="test-spinner" id="wf-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="wf-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="wf-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('wf-log')">Clear</button></div>
+            <div class="log-body" id="wf-log-body"></div>
+            <div class="log-meta" id="wf-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS POST -->
+  <div id="webhooks-post" class="section">
+    <div class="section-title">POST /webhooks</div>
+    <div class="section-desc">Register a webhook to receive real-time event notifications.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-POST">POST</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks">/api/rest/v6/webhooks</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Create a webhook</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'whp-req')">Request</div>
+          <div class="tab" onclick="switchTab(this,'whp-res')">Response</div>
+          <div class="tab" onclick="switchTab(this,'whp-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'whp-test')">Test</div>
+        </div>
+        <div id="whp-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"name"</span>: <span class="json-string">"My Webhook"</span>,
+  <span class="json-key">"scope"</span>: <span class="json-string">"ACCOUNT"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"ACTIVE"</span>,
+  <span class="json-key">"webhookSubscriptionEvents"</span>: [
+    <span class="json-string">"AGREEMENT_WORKFLOW_COMPLETE"</span>,
+    <span class="json-string">"AGREEMENT_ACTION_COMPLETED"</span>
+  ],
+  <span class="json-key">"webhookUrlInfo"</span>: { <span class="json-key">"url"</span>: <span class="json-string">"https://your-server.com/webhook"</span> }
+}</pre>
+        </div>
+        <div id="whp-res" class="tab-panel"><pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"id"</span>: <span class="json-string">"&lt;webhookId&gt;"</span> }</pre></div>
+        <div id="whp-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"name"</span>: <span class="json-type">string</span>                            <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"scope"</span>: <span class="json-type">enum(ACCOUNT|GROUP|USER|RESOURCE)</span>  <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"state"</span>: <span class="json-type">enum(ACTIVE|INACTIVE)</span>            <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"webhookSubscriptionEvents"</span>: <span class="json-type">array[enum]</span>    <span class="json-req">// REQUIRED — min 1 event</span>
+  <span class="json-key">"webhookUrlInfo"</span>: { <span class="json-key">"url"</span>: <span class="json-type">string</span> }        <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"resourceId"</span>: <span class="json-type">string</span>                     <span class="json-opt">// optional — when scope=RESOURCE</span>
+  <span class="json-key">"resourceType"</span>: <span class="json-type">enum</span>                     <span class="json-opt">// optional — AGREEMENT|WIDGET|MEGASIGN|LIBRARY_DOCUMENT</span>
+}</pre>
+        </div>
+        <div id="whp-test" class="tab-panel">
+          <div class="test-panel">
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="whp-test-body">{
+  "name": "My Webhook",
+  "scope": "ACCOUNT",
+  "state": "ACTIVE",
+  "webhookSubscriptionEvents": ["AGREEMENT_WORKFLOW_COMPLETE"],
+  "webhookUrlInfo": { "url": "https://your-server.com/webhook" }
+}</textarea></div>
+            <button class="test-run-btn" onclick="runTest('whp','POST','/api/rest/v6/webhooks',document.getElementById('whp-test-body').value)"><span class="test-spinner" id="whp-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="whp-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whp-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whp-log')">Clear</button></div>
+            <div class="log-body" id="whp-log-body"></div>
+            <div class="log-meta" id="whp-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS GET -->
+  <div id="webhooks-get" class="section">
+    <div class="section-title">GET /webhooks</div>
+    <div class="section-desc">List all webhooks registered for the account/user.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks">/api/rest/v6/webhooks</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">List all webhooks</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'whg-req')">Request</div><div class="tab" onclick="switchTab(this,'whg-schema')">Schema</div><div class="tab" onclick="switchTab(this,'whg-test')">Test</div></div>
+        <div id="whg-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/webhooks?scope=ACCOUNT HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+<span class="json-comment">// ?showInActiveWebhooks=true to include inactive</span></pre>
+        </div>
+        <div id="whg-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"scope"</span>: <span class="json-type">enum</span>                   <span class="json-opt">// optional</span>
+  <span class="json-key">"showInActiveWebhooks"</span>: <span class="json-type">boolean</span>  <span class="json-opt">// optional — default false</span>
+  <span class="json-key">"cursor"</span>: <span class="json-type">string</span>                <span class="json-opt">// optional — pagination</span>
+  <span class="json-key">"pageSize"</span>: <span class="json-type">integer</span>             <span class="json-opt">// optional</span>
+}</pre>
+        </div>
+        <div id="whg-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Scope</span><select class="test-input" id="whg-test-scope" style="appearance:none;cursor:pointer;"><option value="">All</option><option value="ACCOUNT">ACCOUNT</option><option value="GROUP">GROUP</option><option value="USER">USER</option></select></div>
+            <div class="test-row"><span class="test-label">Include Inactive</span><select class="test-input" id="whg-test-inactive" style="appearance:none;cursor:pointer;"><option value="false">No</option><option value="true">Yes</option></select></div>
+            <button class="test-run-btn" onclick="runWebhooksListTest()"><span class="test-spinner" id="whg-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="whg-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whg-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whg-log')">Clear</button></div>
+            <div class="log-body" id="whg-log-body"></div>
+            <div class="log-meta" id="whg-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS GET BY ID -->
+  <div id="webhooks-getid" class="section">
+    <div class="section-title">GET /webhooks/{webhookId}</div>
+    <div class="section-desc">Retrieve details of a specific webhook by ID.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-GET">GET</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks/{webhookId}">/api/rest/v6/webhooks/{webhookId}</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Get webhook by ID</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'whgid-req')">Request</div><div class="tab" onclick="switchTab(this,'whgid-test')">Test</div></div>
+        <div id="whgid-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>GET /api/rest/v6/webhooks/{webhookId} HTTP/1.1
+Authorization: Bearer &lt;token&gt;</pre>
+        </div>
+        <div id="whgid-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Webhook ID</span><input class="test-input" id="whgid-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <button class="test-run-btn" onclick="runIdTest('whgid','webhooks')"><span class="test-spinner" id="whgid-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="whgid-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whgid-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whgid-log')">Clear</button></div>
+            <div class="log-body" id="whgid-log-body"></div>
+            <div class="log-meta" id="whgid-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS PUT -->
+  <div id="webhooks-put" class="section">
+    <div class="section-title">PUT /webhooks/{webhookId}</div>
+    <div class="section-desc">Update the name, events, or URL of an existing webhook.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-PUT">PUT</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks/{webhookId}">/api/rest/v6/webhooks/{webhookId}</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Update webhook config</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'whpu-req')">Request</div><div class="tab" onclick="switchTab(this,'whpu-test')">Test</div></div>
+        <div id="whpu-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"name"</span>: <span class="json-string">"Updated Webhook Name"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"ACTIVE"</span>,
+  <span class="json-key">"webhookSubscriptionEvents"</span>: [<span class="json-string">"AGREEMENT_WORKFLOW_COMPLETE"</span>],
+  <span class="json-key">"webhookUrlInfo"</span>: { <span class="json-key">"url"</span>: <span class="json-string">"https://new-endpoint.com/webhook"</span> }
+}</pre>
+        </div>
+        <div id="whpu-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Webhook ID</span><input class="test-input" id="whpu-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <div style="margin-bottom:4px;"><div class="code-label" style="margin-bottom:6px;">Request Body</div>
+            <textarea class="test-body" id="whpu-test-body">{
+  "name": "Updated Webhook",
+  "state": "ACTIVE",
+  "webhookSubscriptionEvents": ["AGREEMENT_WORKFLOW_COMPLETE"],
+  "webhookUrlInfo": { "url": "https://your-server.com/webhook" }
+}</textarea></div>
+            <button class="test-run-btn" onclick="runPutIdTest('whpu','webhooks','')"><span class="test-spinner" id="whpu-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="whpu-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whpu-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whpu-log')">Clear</button></div>
+            <div class="log-body" id="whpu-log-body"></div>
+            <div class="log-meta" id="whpu-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS STATE -->
+  <div id="webhooks-state" class="section">
+    <div class="section-title">PUT /webhooks/{webhookId}/state</div>
+    <div class="section-desc">Enable or disable a webhook without deleting it.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-PUT">PUT</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks/{webhookId}/state">/api/rest/v6/webhooks/{webhookId}/state</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Enable/disable webhook</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'whs-req')">Request</div><div class="tab" onclick="switchTab(this,'whs-test')">Test</div></div>
+        <div id="whs-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{ <span class="json-key">"state"</span>: <span class="json-string">"INACTIVE"</span> }
+<span class="json-comment">// or "ACTIVE" to re-enable</span></pre>
+        </div>
+        <div id="whs-test" class="tab-panel">
+          <div class="test-panel">
+            <div class="test-row"><span class="test-label">Webhook ID</span><input class="test-input" id="whs-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <div class="test-row"><span class="test-label">New State</span><select class="test-input" id="whs-test-state" style="appearance:none;cursor:pointer;"><option value="ACTIVE">ACTIVE</option><option value="INACTIVE">INACTIVE</option></select></div>
+            <button class="test-run-btn" onclick="runWebhookStateTest()"><span class="test-spinner" id="whs-spinner"></span>&#9654; Run Test</button>
+          </div>
+          <div id="whs-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whs-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whs-log')">Clear</button></div>
+            <div class="log-body" id="whs-log-body"></div>
+            <div class="log-meta" id="whs-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEBHOOKS DELETE -->
+  <div id="webhooks-delete" class="section">
+    <div class="section-title">DELETE /webhooks/{webhookId}</div>
+    <div class="section-desc">Permanently delete a webhook. This cannot be undone.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="endpoint-method method-DELETE">DELETE</span>
+        <span class="endpoint-path" data-path="/api/rest/v6/webhooks/{webhookId}">/api/rest/v6/webhooks/{webhookId}</span>
+        <button class="endpoint-copy-btn" onclick="copyEndpoint(this)">Copy URL</button>
+        <span class="endpoint-desc">Delete a webhook</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'whd-req')">Request</div><div class="tab" onclick="switchTab(this,'whd-test')">Test</div></div>
+        <div id="whd-req" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>DELETE /api/rest/v6/webhooks/{webhookId} HTTP/1.1
+Authorization: Bearer &lt;token&gt;
+<span class="json-comment">// Returns 204 No Content on success</span></pre>
+        </div>
+        <div id="whd-test" class="tab-panel">
+          <div class="test-panel">
+            <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#ef4444;">&#9888; This permanently deletes the webhook. This cannot be undone.</div>
+            <div class="test-row"><span class="test-label">Webhook ID</span><input class="test-input" id="whd-test-id" placeholder="CBJCHBCAABAAncSuj..."></div>
+            <button class="test-run-btn" style="background:var(--delete);" onclick="runDeleteTest()"><span class="test-spinner" id="whd-spinner"></span>&#9654; Delete Webhook</button>
+          </div>
+          <div id="whd-log" class="log-panel" style="display:none;">
+            <div class="log-header"><div class="log-title">Response <span id="whd-log-status" class="log-status-badge"></span></div><button class="log-clear-btn" onclick="clearLog('whd-log')">Clear</button></div>
+            <div class="log-body" id="whd-log-body"></div>
+            <div class="log-meta" id="whd-log-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THROTTLING -->
+  <div id="throttling" class="section">
+    <div class="section-title">Rate Limits &amp; Throttling</div>
+    <div class="section-desc">Acrobat Sign enforces four throttling mechanisms. All return HTTP 429 when exceeded.</div>
+    <div class="endpoint-card">
+      <div class="endpoint-header" onclick="toggleCard(this)">
+        <span style="font-size:18px;">&#9889;</span>
+        <span class="endpoint-path">HTTP 429 &#8212; REST API Rate Limit</span>
+        <span class="endpoint-chevron open">&#9660;</span>
+      </div>
+      <div class="endpoint-body open">
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab(this,'th-429')">429 Responses</div>
+          <div class="tab" onclick="switchTab(this,'th-schema')">Schema</div>
+          <div class="tab" onclick="switchTab(this,'th-polling')">Polling (GET)</div>
+          <div class="tab" onclick="switchTab(this,'th-system')">System Load</div>
+        </div>
+        <div id="th-429" class="tab-panel active">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"code"</span>: <span class="json-string">"THROTTLING_TOO_MANY_REQUESTS"</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"...try again in &lt;N&gt; seconds"</span>,
+  <span class="json-key">"retryAfter"</span>: <span class="json-number">60</span>
+}
+Retry-After: 60   <span class="json-comment">// also in response header</span></pre>
+        </div>
+        <div id="th-schema" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"code"</span>: <span class="json-type">enum</span>        <span class="json-req">// REQUIRED — THROTTLING_TOO_MANY_REQUESTS | THROTTLING_HIGH_SYSTEM_LOAD</span>
+  <span class="json-key">"message"</span>: <span class="json-type">string</span>     <span class="json-req">// REQUIRED</span>
+  <span class="json-key">"retryAfter"</span>: <span class="json-type">integer</span>  <span class="json-req">// REQUIRED — seconds to wait</span>
+}
+<span class="json-comment">// Headers:</span>
+<span class="json-key">"Retry-After"</span>: <span class="json-type">integer</span>
+<span class="json-key">"X-Throttling-Reason"</span>: <span class="json-type">string</span>  <span class="json-opt">// optional — "high-system-load"</span></pre>
+        </div>
+        <div id="th-polling" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button><span class="json-comment">// GLOBAL/ENTERPRISE tier: 3 identical calls per 1-minute interval</span>
+<span class="json-comment">// All other tiers: 1 call per 10-minute interval</span>
+
+<span class="json-comment">// Best practice — conditional GET with ETag:</span>
+GET /api/rest/v6/agreements/{id}
+If-None-Match: "D0CA32AB5F61126FA..."
+<span class="json-comment">// 304 Not Modified if unchanged | 200 + new ETag if changed</span></pre>
+          <div class="warn">&#9888;&#65039; Use webhooks for real-time updates. Excessive polling may result in temporary API suspension.</div>
+        </div>
+        <div id="th-system" class="tab-panel">
+          <pre><button class="pre-copy-btn" onclick="copyPre(this)">Copy</button>{
+  <span class="json-key">"code"</span>: <span class="json-string">"THROTTLING_HIGH_SYSTEM_LOAD"</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"...try again in &lt;N&gt; seconds."</span>,
+  <span class="json-key">"retryAfter"</span>: <span class="json-number">30</span>
+}
+X-Throttling-Reason: high-system-load</pre>
+          <div class="note">A retry penalty applies for accounts created after May 20, 2025: retrying before the Retry-After window resets the timer. Always use the server-provided delay.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL LOG -->
+  <div id="global-log" class="section">
+    <div class="section-title">Response Log</div>
+    <div class="section-desc">All live API responses from Test calls are captured here for review.</div>
+    <div class="log-panel">
+      <div class="log-header">
+        <div class="log-title" id="global-log-title">No requests yet</div>
+        <button class="log-clear-btn" onclick="clearGlobalLog()">Clear All</button>
+      </div>
+      <div id="global-log-body" class="log-empty">Run a test from any endpoint&#39;s Test tab to see responses here.</div>
+    </div>
+  </div>
+
+</main>
+<div class="toast" id="toast"></div>
+<script>
+  var globalToken='', globalRegion='api.na1.echosign.com', globalLogs=[];
+
+  // ── Auth ───────────────────────────────────────────────────
+  function onTokenInput(){
+    var v=document.getElementById('bearerToken').value.trim();
+    document.getElementById('authDot').className=v?'auth-dot active':'auth-dot';
+    document.getElementById('authOkBadge').style.display=v?'inline-block':'none';
+  }
+  function saveToken(){
+    globalToken=document.getElementById('bearerToken').value.trim();
+    if(!globalToken){showToast('Token is empty',true);return;}
+    document.getElementById('authStatus').textContent='&#10003; Saved ('+globalToken.substring(0,14)+'...)';
+    document.getElementById('authStatus').style.color='var(--get)';
+    showToast('Token saved');
+  }
+  function clearToken(){
+    globalToken='';
+    document.getElementById('bearerToken').value='';
+    document.getElementById('authStatus').textContent='No token set';
+    document.getElementById('authStatus').style.color='';
+    document.getElementById('authDot').className='auth-dot';
+    document.getElementById('authOkBadge').style.display='none';
+    showToast('Token cleared');
+  }
+  function toggleTokenVis(){
+    var i=document.getElementById('bearerToken');
+    i.type=i.type==='password'?'text':'password';
+  }
+  function selectShard(shardId, host, btn){
+    globalRegion=host;
+    document.querySelectorAll('.shard-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById('shardHostDisplay').textContent=host;
+    var hb=document.getElementById('headerRegionBadge');
+    if(hb)hb.textContent=host;
+  }
+
+  // ── Navigation ─────────────────────────────────────────────
+  function showSection(id,el){
+    document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+    document.querySelectorAll('.sidebar-link').forEach(function(l){l.classList.remove('active');});
+    var sec=document.getElementById(id);
+    if(sec)sec.classList.add('active');
+    if(el)el.classList.add('active');
+    document.querySelector('.main').scrollTo({top:0,behavior:'smooth'});
+  }
+  function switchTab(tab,panelId){
+    var card=tab.closest('.endpoint-card')||tab.closest('.section');
+    card.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+    card.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+    tab.classList.add('active');
+    var panel=document.getElementById(panelId);
+    if(panel)panel.classList.add('active');
+  }
+  function toggleCard(header){
+    var body=header.nextElementSibling;
+    var chev=header.querySelector('.endpoint-chevron');
+    if(body)body.classList.toggle('open');
+    if(chev)chev.classList.toggle('open');
+  }
+
+  // Endpoint card click toggle (skip copy button clicks)
+  document.querySelectorAll('.endpoint-header').forEach(function(h){
+    if(h.getAttribute('onclick'))return;
+    h.addEventListener('click',function(e){
+      if(e.target.classList.contains('endpoint-copy-btn')||e.target.closest('.endpoint-copy-btn'))return;
+      var body=this.nextElementSibling;
+      var chev=this.querySelector('.endpoint-chevron');
+      if(body)body.classList.toggle('open');
+      if(chev)chev.classList.toggle('open');
+    });
+  });
+
+  // ── Copy helpers ───────────────────────────────────────────
+  function copyEndpoint(btn){
+    var pathEl=btn.previousElementSibling;
+    var path=pathEl.getAttribute('data-path')||pathEl.textContent.trim();
+    var url='https://'+globalRegion+path;
+    navigator.clipboard.writeText(url).then(function(){
+      btn.textContent='&#10003; Copied!';
+      btn.classList.add('copied');
+      setTimeout(function(){btn.textContent='Copy URL';btn.classList.remove('copied');},1800);
+    });
+  }
+  function copyPre(btn){
+    var pre=btn.parentElement;
+    var text=pre.innerText.replace(/^Copy\n?/,'').trim();
+    navigator.clipboard.writeText(text).then(function(){
+      btn.textContent='&#10003;';
+      btn.classList.add('copied');
+      setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},1600);
+    });
+  }
+  function copyResult(id){
+    var text=document.getElementById(id+'-text').textContent;
+    navigator.clipboard.writeText(text).then(function(){showToast('Copied!');});
+  }
+  function showToast(msg,err){
+    var t=document.getElementById('toast');
+    t.textContent=msg;
+    t.style.borderColor=err?'var(--delete)':'var(--get)';
+    t.style.color=err?'var(--delete)':'var(--get)';
+    t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show');},2200);
+  }
+
+  // ── Sidebar search ─────────────────────────────────────────
+  document.getElementById('sidebarSearch').addEventListener('input',function(){
+    var q=this.value.toLowerCase();
+    document.querySelectorAll('.sidebar-link').forEach(function(l){
+      l.style.display=l.textContent.toLowerCase().includes(q)?'':'none';
+    });
+    document.querySelectorAll('.sidebar-section').forEach(function(s){
+      var vis=[].some.call(s.querySelectorAll('.sidebar-link'),function(l){return l.style.display!=='none';});
+      s.style.display=vis?'':'none';
+    });
+  });
+
+  // ── Global log ─────────────────────────────────────────────
+  function addToGlobalLog(method,endpoint,status,body,duration){
+    globalLogs.unshift({method:method,endpoint:endpoint,status:status,body:body,duration:duration,time:new Date().toLocaleTimeString()});
+    renderGlobalLog();
+  }
+  function renderGlobalLog(){
+    var el=document.getElementById('global-log-body');
+    var ti=document.getElementById('global-log-title');
+    if(!globalLogs.length){
+      el.className='log-empty';el.textContent='No requests yet.';
+      ti.textContent='No requests yet';return;
+    }
+    ti.textContent=globalLogs.length+' request'+(globalLogs.length!==1?'s':'');
+    el.className='log-body';
+    el.innerHTML=globalLogs.map(function(l){
+      var cls=l.status>=500?'log-status-5xx':l.status>=400?'log-status-4xx':l.status===0?'log-status-0':'log-status-2xx';
+      return '<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">'+
+        '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">'+
+        '<span style="font-weight:700;color:var(--post);font-family:var(--font-mono);font-size:11px;">'+l.method+'</span>'+
+        '<span style="color:var(--text);font-size:11px;font-family:var(--font-mono);">'+escHtml(l.endpoint)+'</span>'+
+        '<span class="log-status-badge '+cls+'">'+l.status+'</span>'+
+        '<span style="margin-left:auto;color:var(--text-muted);font-size:10px;">'+l.time+' &middot; '+l.duration+'ms</span></div>'+
+        '<div style="font-size:11px;color:#c9d1d9;white-space:pre-wrap;word-break:break-all;">'+escHtml(l.body)+'</div></div>';
+    }).join('');
+  }
+  function clearGlobalLog(){globalLogs.length=0;renderGlobalLog();}
+  function clearLog(id){document.getElementById(id).style.display='none';}
+  function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function showLogResult(prefix,status,body,duration,endpoint,method){
+    var panel=document.getElementById(prefix+'-log');
+    if(!panel)return;
+    panel.style.display='block';
+    var cls=status>=500?'log-status-5xx':status>=400?'log-status-4xx':status===0?'log-status-0':'log-status-2xx';
+    document.getElementById(prefix+'-log-status').textContent=status||'ERR';
+    document.getElementById(prefix+'-log-status').className='log-status-badge '+cls;
+    document.getElementById(prefix+'-log-body').textContent=body;
+    var meta=document.getElementById(prefix+'-log-meta');
+    if(meta)meta.innerHTML='<span>'+duration+'ms</span><span>'+new Date().toLocaleTimeString()+'</span>';
+    addToGlobalLog(method,endpoint,status,body,duration);
+  }
+
+  // ── API test runners ───────────────────────────────────────
+  function setRunning(prefix,on){
+    var sp=document.getElementById(prefix+'-spinner');
+    var btn=sp&&sp.closest('.test-run-btn');
+    if(sp)sp.style.display=on?'inline-block':'none';
+    if(btn)btn.disabled=on;
+  }
+
+  async function runTest(prefix,method,urlPath,body){
+    var _tok=getToken(prefix)||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    setRunning(prefix,true);
+    var start=Date.now();
+    try{
+      var opts={method:method,headers:{'Authorization':'Bearer '+(getToken(prefix)||globalToken),'Content-Type':'application/json'}};
+      if(body)opts.body=body;
+      var res=await fetch('https://'+globalRegion+urlPath,opts);
+      var dur=Date.now()-start, text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult(prefix,res.status,text,dur,urlPath,method);
+    }catch(e){showLogResult(prefix,0,'Network error: '+e.message,Date.now()-start,urlPath,method);}
+    finally{setRunning(prefix,false);}
+  }
+
+  async function runIdTest(prefix,resource,suffix){
+    var _tok=getToken(prefix)||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById(prefix+'-test-id').value.trim();
+    if(!id){showToast('Enter a resource ID first',true);return;}
+    var path='/api/rest/v6/'+resource+'/'+id+(suffix||'');
+    setRunning(prefix,true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var dur=Date.now()-start, text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult(prefix,res.status,text,dur,path,'GET');
+    }catch(e){showLogResult(prefix,0,'Network error: '+e.message,Date.now()-start,path,'GET');}
+    finally{setRunning(prefix,false);}
+  }
+
+  async function runLibraryTest(){
+    var _tok=getToken('lg')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var gid=document.getElementById('lg-test-gid').value.trim();
+    var path='/api/rest/v6/libraryDocuments'+(gid?'?groupId='+encodeURIComponent(gid):'');
+    setRunning('lg',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var dur=Date.now()-start, text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult('lg',res.status,text,dur,path,'GET');
+    }catch(e){showLogResult('lg',0,'Network error: '+e.message,Date.now()-start,path,'GET');}
+    finally{setRunning('lg',false);}
+  }
+
+  // ── Per-panel token banners ────────────────────────────────
+  // Each test panel gets a banner showing active token + override option.
+  // Per-panel overrides are stored here; fall back to globalToken.
+  var panelTokens = {};
+
+  function injectTokenBanners() {
+    document.querySelectorAll('.test-panel').forEach(function(panel, i) {
+      var pid = 'tp' + i;
+      panel.setAttribute('data-panel-id', pid);
+
+      var banner = document.createElement('div');
+      banner.className = 'test-token-banner';
+      banner.id = 'banner-' + pid;
+      banner.innerHTML =
+        '<span class="test-token-dot" id="tdot-' + pid + '"></span>' +
+        '<span class="test-token-label">Token</span>' +
+        '<span class="test-token-value" id="tval-' + pid + '">No token set — save one in the sidebar</span>' +
+        '<button class="test-token-override" onclick="toggleTokenOverride(\'' + pid + '\')">Override</button>';
+
+      var overrideRow = document.createElement('div');
+      overrideRow.className = 'test-token-input-row';
+      overrideRow.id = 'trow-' + pid;
+      overrideRow.innerHTML =
+        '<input class="test-token-input" id="tinput-' + pid + '" placeholder="Paste a different token for this call only..." />' +
+        '<button class="test-token-use-btn" onclick="applyPanelToken(\'' + pid + '\')">Use</button>' +
+        '<button class="test-token-clear-btn" onclick="clearPanelToken(\'' + pid + '\')">Clear</button>';
+
+      panel.insertBefore(overrideRow, panel.firstChild);
+      panel.insertBefore(banner, panel.firstChild);
+    });
+    refreshAllBanners();
+  }
+
+  function refreshAllBanners() {
+    document.querySelectorAll('.test-panel').forEach(function(panel) {
+      var pid = panel.getAttribute('data-panel-id');
+      if (!pid) return;
+      var token = panelTokens[pid] || globalToken;
+      var dot = document.getElementById('tdot-' + pid);
+      var val = document.getElementById('tval-' + pid);
+      if (!dot || !val) return;
+      if (token) {
+        dot.className = 'test-token-dot ok';
+        val.textContent = token.substring(0, 16) + '••••••••' + token.slice(-6);
+        val.style.color = 'var(--get)';
+        if (panelTokens[pid]) {
+          val.textContent += '  (override)';
+          val.style.color = 'var(--accent2)';
+        }
+      } else {
+        dot.className = 'test-token-dot';
+        val.textContent = 'No token — save one in the sidebar or override below';
+        val.style.color = 'var(--text-muted)';
+      }
+    });
+  }
+
+  function toggleTokenOverride(pid) {
+    var row = document.getElementById('trow-' + pid);
+    row.classList.toggle('visible');
+    if (row.classList.contains('visible')) {
+      var inp = document.getElementById('tinput-' + pid);
+      if (inp) { inp.value = panelTokens[pid] || ''; inp.focus(); }
+    }
+  }
+
+  function applyPanelToken(pid) {
+    var val = document.getElementById('tinput-' + pid).value.trim();
+    if (!val) { showToast('Paste a token first', true); return; }
+    panelTokens[pid] = val;
+    document.getElementById('trow-' + pid).classList.remove('visible');
+    refreshAllBanners();
+    showToast('Override token applied for this panel');
+  }
+
+  function clearPanelToken(pid) {
+    delete panelTokens[pid];
+    document.getElementById('tinput-' + pid).value = '';
+    document.getElementById('trow-' + pid).classList.remove('visible');
+    refreshAllBanners();
+    showToast('Override cleared — using sidebar token');
+  }
+
+  // Returns the right token for a given test panel (override > global)
+  function getToken(prefix) {
+    // Find which panel prefix maps to
+    var panel = document.querySelector('[data-panel-id]');
+    // Walk all panels and match by contained element id
+    var token = getToken(prefix) || globalToken;
+    document.querySelectorAll('.test-panel').forEach(function(p) {
+      var pid = p.getAttribute('data-panel-id');
+      // Check if this panel contains the run button for this prefix
+      var spinner = p.querySelector('#' + prefix + '-spinner');
+      if (spinner && panelTokens[pid]) token = panelTokens[pid];
+    });
+    return token;
+  }
+
+  // Patch saveToken to also refresh all banners
+  var _origSaveToken = saveToken;
+  saveToken = function() { _origSaveToken(); refreshAllBanners(); };
+  var _origClearToken = clearToken;
+  clearToken = function() { _origClearToken(); refreshAllBanners(); };
+
+  // Init banners after DOM ready
+  document.addEventListener('DOMContentLoaded', injectTokenBanners);
+  // Fallback if DOMContentLoaded already fired
+  if (document.readyState !== 'loading') injectTokenBanners();
+
+
+  // POST /transientDocuments — multipart file upload
+  async function runTransientTest(){
+    var _tok=getToken('td')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var fileInput=document.getElementById('td-test-file');
+    if(!fileInput.files.length){showToast('Select a file first',true);return;}
+    var file=fileInput.files[0];
+    var fd=new FormData();
+    fd.append('File',file,file.name);
+    fd.append('Mime-Type',file.type||'application/octet-stream');
+    setRunning('td',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+'/api/rest/v6/transientDocuments',{
+        method:'POST',headers:{'Authorization':'Bearer '+(_tok||globalToken)},body:fd
+      });
+      var dur=Date.now()-start,text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult('td',res.status,text,dur,'/api/rest/v6/transientDocuments','POST');
+    }catch(e){showLogResult('td',0,'Network error: '+e.message,Date.now()-start,'/api/rest/v6/transientDocuments','POST');}
+    finally{setRunning('td',false);}
+  }
+
+  // PUT with ID and body (agreements/state, webhooks PUT)
+  async function runPutIdTest(prefix,resource,suffix){
+    var _tok=getToken(prefix)||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById(prefix+'-test-id').value.trim();
+    if(!id){showToast('Enter a resource ID first',true);return;}
+    var body=document.getElementById(prefix+'-test-body')?document.getElementById(prefix+'-test-body').value:'{}';
+    var path='/api/rest/v6/'+resource+'/'+id+(suffix||'');
+    setRunning(prefix,true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{
+        method:'PUT',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},body:body
+      });
+      var dur=Date.now()-start,text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=res.status===200||res.status===204?'('+res.status+' — no body)':await res.text();}
+      showLogResult(prefix,res.status,text,dur,path,'PUT');
+    }catch(e){showLogResult(prefix,0,'Network error: '+e.message,Date.now()-start,path,'PUT');}
+    finally{setRunning(prefix,false);}
+  }
+
+  // POST with ID in path (reminders)
+  async function runPostIdTest(prefix,resource,suffix){
+    var _tok=getToken(prefix)||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById(prefix+'-test-id').value.trim();
+    if(!id){showToast('Enter a resource ID first',true);return;}
+    var body=document.getElementById(prefix+'-test-body').value;
+    var path='/api/rest/v6/'+resource+'/'+id+(suffix||'');
+    setRunning(prefix,true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{
+        method:'POST',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},body:body
+      });
+      var dur=Date.now()-start,text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult(prefix,res.status,text,dur,path,'POST');
+    }catch(e){showLogResult(prefix,0,'Network error: '+e.message,Date.now()-start,path,'POST');}
+    finally{setRunning(prefix,false);}
+  }
+
+  // GET /agreements/{id}/combinedDocument — binary PDF
+  async function runDocDownloadTest(){
+    var _tok=getToken('cd')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById('cd-test-id').value.trim();
+    if(!id){showToast('Enter an Agreement ID first',true);return;}
+    var audit=document.getElementById('cd-test-audit').value;
+    var path='/api/rest/v6/agreements/'+id+'/combinedDocument?attachAuditReport='+audit;
+    setRunning('cd',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var dur=Date.now()-start;
+      if(res.ok){
+        var blob=await res.blob();
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;a.download='agreement_'+id+'.pdf';a.click();
+        URL.revokeObjectURL(url);
+        showLogResult('cd',res.status,'PDF downloaded successfully ('+Math.round(blob.size/1024)+'KB). Check your downloads folder.',dur,path,'GET');
+      } else {
+        var text; try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+        showLogResult('cd',res.status,text,dur,path,'GET');
+      }
+    }catch(e){showLogResult('cd',0,'Network error: '+e.message,Date.now()-start,path,'GET');}
+    finally{setRunning('cd',false);}
+  }
+
+  // GET /webhooks with query params
+  async function runWebhooksListTest(){
+    var _tok=getToken('whg')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var scope=document.getElementById('whg-test-scope').value;
+    var inactive=document.getElementById('whg-test-inactive').value;
+    var params=new URLSearchParams();
+    if(scope)params.set('scope',scope);
+    if(inactive==='true')params.set('showInActiveWebhooks','true');
+    var path='/api/rest/v6/webhooks'+(params.toString()?'?'+params.toString():'');
+    setRunning('whg',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var dur=Date.now()-start,text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
+      showLogResult('whg',res.status,text,dur,path,'GET');
+    }catch(e){showLogResult('whg',0,'Network error: '+e.message,Date.now()-start,path,'GET');}
+    finally{setRunning('whg',false);}
+  }
+
+  // PUT /webhooks/{id}/state
+  async function runWebhookStateTest(){
+    var _tok=getToken('whs')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById('whs-test-id').value.trim();
+    if(!id){showToast('Enter a Webhook ID first',true);return;}
+    var state=document.getElementById('whs-test-state').value;
+    var path='/api/rest/v6/webhooks/'+id+'/state';
+    setRunning('whs',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{
+        method:'PUT',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},
+        body:JSON.stringify({state:state})
+      });
+      var dur=Date.now()-start,text;
+      try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text='('+res.status+' — no body)';}
+      showLogResult('whs',res.status,text,dur,path,'PUT');
+    }catch(e){showLogResult('whs',0,'Network error: '+e.message,Date.now()-start,path,'PUT');}
+    finally{setRunning('whs',false);}
+  }
+
+  // DELETE /webhooks/{id}
+  async function runDeleteTest(){
+    var _tok=getToken('whd')||globalToken;
+    if(!_tok){showToast('Save a Bearer Token first',true);return;}
+    var id=document.getElementById('whd-test-id').value.trim();
+    if(!id){showToast('Enter a Webhook ID first',true);return;}
+    var path='/api/rest/v6/webhooks/'+id;
+    setRunning('whd',true);
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+path,{
+        method:'DELETE',headers:{'Authorization':'Bearer '+(_tok||globalToken)}
+      });
+      var dur=Date.now()-start,text;
+      text=res.status===204?'(204 No Content — webhook deleted successfully)':await res.text();
+      showLogResult('whd',res.status,text,dur,path,'DELETE');
+      if(res.status===204)showToast('Webhook deleted');
+    }catch(e){showLogResult('whd',0,'Network error: '+e.message,Date.now()-start,path,'DELETE');}
+    finally{setRunning('whd',false);}
+  }
+
+  // ── Scope picker ───────────────────────────────────────────
+  var scopeLevel='account';
+  // Scopes that only support :self (no account/group level)
+  var selfOnlyScopes=['user_login','openid'];
+
+  function updateScopes(){
+    var chips=document.querySelectorAll('#scopePicker .scope-chip');
+    var parts=[];
+    chips.forEach(function(chip){
+      var cb=chip.querySelector('input[type=checkbox]');
+      var name=chip.getAttribute('data-scope');
+      if(cb&&cb.checked){
+        chip.classList.add('selected');
+        if(selfOnlyScopes.indexOf(name)>=0){
+          parts.push(name);
+        } else {
+          parts.push(name+':'+scopeLevel);
+        }
+      } else if(cb){
+        chip.classList.remove('selected');
+      }
+    });
+    document.getElementById('scopeOutput').textContent=parts.join(' ')||'(none selected)';
+  }
+
+  function setAllLevel(level){
+    scopeLevel=level;
+    ['account','group','self'].forEach(function(l){
+      var btn=document.getElementById('lvBtn-'+l);
+      if(btn)btn.className='scope-level-btn'+(l===level?' active':'');
+    });
+    // Update visible level labels on chips
+    document.querySelectorAll('#scopePicker .scope-chip-level').forEach(function(el){
+      var chip=el.closest('.scope-chip');
+      var name=chip&&chip.getAttribute('data-scope');
+      if(name&&selfOnlyScopes.indexOf(name)<0) el.textContent=':'+level;
+    });
+    updateScopes();
+  }
+
+  function selectAllScopes(){
+    document.querySelectorAll('#scopePicker .scope-chip input[type=checkbox]').forEach(function(cb){cb.checked=true;});
+    updateScopes();
+  }
+
+  function clearAllScopes(){
+    document.querySelectorAll('#scopePicker .scope-chip input[type=checkbox]').forEach(function(cb){cb.checked=false;});
+    updateScopes();
+  }
+
+  function copyScopeOutput(){
+    var text=document.getElementById('scopeOutput').textContent;
+    navigator.clipboard.writeText(text).then(function(){showToast('Scope string copied!');});
+  }
+
+  function buildAuthURL(){
+    var cid=document.getElementById('ac-client-id').value.trim();
+    var redir=document.getElementById('ac-redirect').value.trim();
+    var scope=document.getElementById('scopeOutput').textContent.trim();
+    var state=document.getElementById('ac-state').value.trim();
+    if(!cid||!redir){showToast('Client ID and Redirect URI required',true);return;}
+    if(!scope||scope==='(none selected)'){showToast('Select at least one scope',true);return;}
+    var base='https://secure.'+globalRegion.replace('api.','')+'/public/oauth/v2';
+    var p=new URLSearchParams({response_type:'code',client_id:cid,redirect_uri:redir,scope:scope});
+    if(state)p.set('state',state);
+    var url=base+'?'+p.toString();
+    document.getElementById('ac-result-text').textContent=url;
+    document.getElementById('ac-result').style.display='block';
+    showToast('Auth URL built');
+  }
+
+  async function generateAccessToken(){
+    var cid=document.getElementById('at-client-id').value.trim();
+    var sec=document.getElementById('at-client-secret').value.trim();
+    var code=document.getElementById('at-code').value.trim();
+    var redir=document.getElementById('at-redirect').value.trim();
+    if(!cid||!sec||!code||!redir){showToast('All fields required',true);return;}
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+'/oauth/v2/token',{
+        method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({grant_type:'authorization_code',code:code,client_id:cid,client_secret:sec,redirect_uri:redir})
+      });
+      var dur=Date.now()-start, json=await res.json(), text=JSON.stringify(json,null,2);
+      document.getElementById('at-log').style.display='block';
+      var cls=res.status>=400?'log-status-4xx':'log-status-2xx';
+      document.getElementById('at-log-status').textContent=res.status;
+      document.getElementById('at-log-status').className='log-status-badge '+cls;
+      document.getElementById('at-log-body').textContent=text;
+      document.getElementById('at-log-meta').innerHTML='<span>'+dur+'ms</span>';
+      if(json.access_token){
+        document.getElementById('at-result-text').textContent=json.access_token;
+        document.getElementById('at-result').style.display='block';
+        showToast('Access token received!');
+      }
+      addToGlobalLog('POST','/oauth/v2/token',res.status,text,dur);
+    }catch(e){showToast('Error: '+e.message,true);}
+  }
+
+  async function doRefreshToken(){
+    var cid=document.getElementById('rt-client-id').value.trim();
+    var sec=document.getElementById('rt-client-secret').value.trim();
+    var rt=document.getElementById('rt-refresh-token').value.trim();
+    if(!cid||!sec||!rt){showToast('All fields required',true);return;}
+    var start=Date.now();
+    try{
+      var res=await fetch('https://'+globalRegion+'/oauth/v2/refresh',{
+        method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({grant_type:'refresh_token',refresh_token:rt,client_id:cid,client_secret:sec})
+      });
+      var dur=Date.now()-start, json=await res.json(), text=JSON.stringify(json,null,2);
+      document.getElementById('rt-log').style.display='block';
+      var cls=res.status>=400?'log-status-4xx':'log-status-2xx';
+      document.getElementById('rt-log-status').textContent=res.status;
+      document.getElementById('rt-log-status').className='log-status-badge '+cls;
+      document.getElementById('rt-log-body').textContent=text;
+      document.getElementById('rt-log-meta').innerHTML='<span>'+dur+'ms</span>';
+      if(json.access_token){
+        document.getElementById('rt-result-text').textContent=json.access_token;
+        document.getElementById('rt-result').style.display='block';
+        showToast('Token refreshed!');
+      }
+      addToGlobalLog('POST','/oauth/v2/refresh',res.status,text,dur);
+    }catch(e){showToast('Error: '+e.message,true);}
+  }
+</script>
+</body>
+</html>
