@@ -1654,6 +1654,20 @@ X-Throttling-Reason: high-system-load</pre>
 <div class="toast" id="toast"></div>
 <script>
   var globalToken='', globalRegion='api.na1.echosign.com', globalLogs=[];
+  var globalShard='na1';
+
+  // ── Proxy config ───────────────────────────────────────────
+  // Set to your Render URL once deployed, e.g.:
+  // 'https://adobe-sign-proxy.onrender.com'
+  var PROXY_URL = 'https://adobe-sign-proxy.onrender.com';
+
+  // Builds a proxied URL: all API calls go through the proxy
+  function proxyUrl(path, extraParams) {
+    var base = PROXY_URL + path;
+    var params = new URLSearchParams(extraParams || {});
+    params.set('shard', globalShard);
+    return base + '?' + params.toString();
+  }
 
   // ── Auth ───────────────────────────────────────────────────
   function onTokenInput(){
@@ -1683,6 +1697,7 @@ X-Throttling-Reason: high-system-load</pre>
   }
   function selectShard(shardId, host, btn){
     globalRegion=host;
+    globalShard=shardId;
     document.querySelectorAll('.shard-btn').forEach(function(b){b.classList.remove('active');});
     btn.classList.add('active');
     document.getElementById('shardHostDisplay').textContent=host;
@@ -1829,7 +1844,7 @@ X-Throttling-Reason: high-system-load</pre>
     try{
       var opts={method:method,headers:{'Authorization':'Bearer '+(getToken(prefix)||globalToken),'Content-Type':'application/json'}};
       if(body)opts.body=body;
-      var res=await fetch('https://'+globalRegion+urlPath,opts);
+      var res=await fetch(proxyUrl(urlPath),opts);
       var dur=Date.now()-start, text;
       try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
       showLogResult(prefix,res.status,text,dur,urlPath,method);
@@ -1846,7 +1861,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning(prefix,true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var res=await fetch(proxyUrl(path),{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
       var dur=Date.now()-start, text;
       try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
       showLogResult(prefix,res.status,text,dur,path,'GET');
@@ -1862,7 +1877,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('lg',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var res=await fetch(proxyUrl(path),{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
       var dur=Date.now()-start, text;
       try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
       showLogResult('lg',res.status,text,dur,path,'GET');
@@ -1993,7 +2008,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('td',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+'/api/rest/v6/transientDocuments',{
+      var res=await fetch(proxyUrl('/api/rest/v6/transientDocuments'),{
         method:'POST',headers:{'Authorization':'Bearer '+(_tok||globalToken)},body:fd
       });
       var dur=Date.now()-start,text;
@@ -2014,7 +2029,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning(prefix,true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{
+      var res=await fetch(proxyUrl(path),{
         method:'PUT',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},body:body
       });
       var dur=Date.now()-start,text;
@@ -2035,7 +2050,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning(prefix,true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{
+      var res=await fetch(proxyUrl(path),{
         method:'POST',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},body:body
       });
       var dur=Date.now()-start,text;
@@ -2056,7 +2071,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('cd',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var res=await fetch(proxyUrl(path),{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
       var dur=Date.now()-start;
       if(res.ok){
         var blob=await res.blob();
@@ -2085,7 +2100,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('whg',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
+      var res=await fetch(proxyUrl(path),{headers:{'Authorization':'Bearer '+(_tok||globalToken)}});
       var dur=Date.now()-start,text;
       try{var j=await res.json();text=JSON.stringify(j,null,2);}catch{text=await res.text();}
       showLogResult('whg',res.status,text,dur,path,'GET');
@@ -2104,7 +2119,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('whs',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{
+      var res=await fetch(proxyUrl(path),{
         method:'PUT',headers:{'Authorization':'Bearer '+(_tok||globalToken),'Content-Type':'application/json'},
         body:JSON.stringify({state:state})
       });
@@ -2125,7 +2140,7 @@ X-Throttling-Reason: high-system-load</pre>
     setRunning('whd',true);
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+path,{
+      var res=await fetch(proxyUrl(path),{
         method:'DELETE',headers:{'Authorization':'Bearer '+(_tok||globalToken)}
       });
       var dur=Date.now()-start,text;
@@ -2215,7 +2230,7 @@ X-Throttling-Reason: high-system-load</pre>
     if(!cid||!sec||!code||!redir){showToast('All fields required',true);return;}
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+'/oauth/v2/token',{
+      var res=await fetch(PROXY_URL+'/proxy/oauth/token?shard='+globalShard,{
         method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
         body:new URLSearchParams({grant_type:'authorization_code',code:code,client_id:cid,client_secret:sec,redirect_uri:redir})
       });
@@ -2242,7 +2257,7 @@ X-Throttling-Reason: high-system-load</pre>
     if(!cid||!sec||!rt){showToast('All fields required',true);return;}
     var start=Date.now();
     try{
-      var res=await fetch('https://'+globalRegion+'/oauth/v2/refresh',{
+      var res=await fetch(PROXY_URL+'/proxy/oauth/refresh?shard='+globalShard,{
         method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
         body:new URLSearchParams({grant_type:'refresh_token',refresh_token:rt,client_id:cid,client_secret:sec})
       });
